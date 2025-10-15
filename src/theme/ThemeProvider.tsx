@@ -11,12 +11,13 @@ import createCache from '@emotion/cache';
 
 const muiCache = createCache({ key: 'mui', prepend: true });
 
-// ✅ Define themes
+// ✅ Define both themes
 const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: { main: '#1976d2' },
-    background: { default: '#f5f5f5', paper: '#fff' },
+    background: { default: '#f5f5f5', paper: '#ffffff' },
+    text: { primary: '#0f172a' },
   },
 });
 
@@ -24,49 +25,52 @@ const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: { main: '#90caf9' },
-    background: { default: '#121212', paper: '#1e1e1e' },
+    background: { default: '#0d1117', paper: '#161b22' },
+    text: { primary: '#e6edf3' },
   },
 });
 
-// ✅ Context to toggle theme
+// ✅ Context for toggling theme
 export const ColorModeContext = React.createContext({
   toggleColorMode: () => {},
   mode: 'light' as 'light' | 'dark',
 });
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const prefersDarkMode = React.useMemo(
-    () => window.matchMedia?.('(prefers-color-scheme: dark)').matches,
-    []
-  );
+  const [mode, setMode] = React.useState<'light' | 'dark'>('light');
 
-  const [mode, setMode] = React.useState<'light' | 'dark'>(() => {
-    if (typeof window === 'undefined') return 'light';
-    return (localStorage.getItem('themeMode') as 'light' | 'dark') ||
-           (prefersDarkMode ? 'dark' : 'light');
-  });
+  // ✅ Run only on client to read from localStorage & matchMedia
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const savedMode =
+        (localStorage.getItem('themeMode') as 'light' | 'dark') ||
+        (prefersDark ? 'dark' : 'light');
+      setMode(savedMode);
+
+      // Listen for OS theme changes
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e: MediaQueryListEvent) => {
+        const newMode = e.matches ? 'dark' : 'light';
+        setMode(newMode);
+        localStorage.setItem('themeMode', newMode);
+      };
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+  }, []);
 
   const toggleColorMode = React.useCallback(() => {
     setMode((prev) => {
       const next = prev === 'light' ? 'dark' : 'light';
-      localStorage.setItem('themeMode', next);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('themeMode', next);
+      }
       return next;
     });
   }, []);
 
   const theme = React.useMemo(() => (mode === 'light' ? lightTheme : darkTheme), [mode]);
-
-  // Sync with OS theme changes
-  React.useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      const newMode = e.matches ? 'dark' : 'light';
-      setMode(newMode);
-      localStorage.setItem('themeMode', newMode);
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
 
   return (
     <CacheProvider value={muiCache}>

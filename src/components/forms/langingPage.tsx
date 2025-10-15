@@ -1,287 +1,218 @@
 'use client';
 
-import * as React from 'react';
-import { useState } from 'react';
-import Head from 'next/head';
+import React from 'react';
 import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Container,
   Box,
   Button,
-  IconButton,
-  Link as MuiLink,
+  Container,
+  Grid,
+  Typography,
   Card,
   CardContent,
-  CardActions,
   Avatar,
-  useMediaQuery,
-  CssBaseline,
-  ThemeProvider,
-  createTheme,
-  PaletteMode,
-  Switch,
-  Divider,
 } from '@mui/material';
-import Grid from '@mui/material/Grid2';
-import MenuIcon from '@mui/icons-material/Menu';
-import StarIcon from '@mui/icons-material/Star';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import { motion } from 'framer-motion';
 
-function getTheme(mode: PaletteMode = 'light') {
-  return createTheme({
-    palette: {
-      mode,
-      primary: { main: '#1976d2' },
-      background: { default: mode === 'light' ? '#f7f9fc' : '#0b1020' },
-    },
-    typography: {
-      fontFamily: 'Inter, Roboto, Arial, sans-serif',
-    },
-  });
-}
-
-const AnimatedSection: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 12 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, amount: 0.2 }}
-    transition={{ duration: 0.6 }}
-  >
-    {children}
-  </motion.div>
-);
-
-const Navbar: React.FC<{ onToggleDark: () => void; mode: PaletteMode }> = ({ onToggleDark, mode }) => {
-  const isSm = useMediaQuery('(max-width:600px)');
-  return (
-    <AppBar position="sticky" color="transparent" sx={{ backdropFilter: 'blur(6px)', mt: 2 }}>
-      <Toolbar sx={{ justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ width: 36, height: 36, bgcolor: 'primary.main', borderRadius: 1.2 }} />
-          <Typography variant="h6">Brandly</Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {!isSm && (
-            <>
-              <MuiLink href="#features" underline="none" color="text.primary">
-                Features
-              </MuiLink>
-              <MuiLink href="#pricing" underline="none" color="text.primary">
-                Pricing
-              </MuiLink>
-              <MuiLink href="#testimonials" underline="none" color="text.primary">
-                Testimonials
-              </MuiLink>
-            </>
-          )}
-          <Switch checked={mode === 'dark'} onChange={onToggleDark} />
-          <Button variant="contained">Get Started</Button>
-          {isSm && (
-            <IconButton aria-label="menu">
-              <MenuIcon />
-            </IconButton>
-          )}
-        </Box>
-      </Toolbar>
-    </AppBar>
-  );
-};
-
-const Hero: React.FC = () => (
-  <AnimatedSection>
-    <Container sx={{ py: 8 }}>
-      <Grid container spacing={6} alignItems="center">
-        <Grid item xs={12} md={6}>
-          <Typography variant="h2" gutterBottom fontWeight={700}>
-            Build your personal brand effortlessly
-          </Typography>
-          <Typography variant="h6" color="text.secondary" paragraph>
-            Create a stunning portfolio, automate content, and measure your growth — all in one place.
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
-            <Button variant="contained" size="large">Start Free Trial</Button>
-            <Button variant="outlined" size="large">Book Demo</Button>
-          </Box>
-          <Box sx={{ display: 'flex', gap: 2, mt: 4, alignItems: 'center' }}>
-            <StarIcon />
-            <Typography>Trusted by agencies and creators</Typography>
-          </Box>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Box sx={{ width: '100%', height: 340, borderRadius: 3, bgcolor: 'background.paper', boxShadow: 3, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Typography color="text.secondary">[Mockup / Illustration]</Typography>
-          </Box>
-        </Grid>
-      </Grid>
-    </Container>
-  </AnimatedSection>
-);
-
-const features = [
-  { title: 'Portfolio Builder', desc: 'Create beautiful personal portfolios.', icon: '🎨' },
-  { title: 'Content Scheduler', desc: 'Plan and automate posts across platforms.', icon: '📆' },
-  { title: 'Analytics Dashboard', desc: 'Understand what works with your metrics.', icon: '📈' },
-];
-
-const Features: React.FC = () => (
-  <AnimatedSection>
-    <Container id="features" sx={{ py: 6 }}>
-      <Typography variant="h4" gutterBottom fontWeight={700} textAlign="center">
-        All the tools you need
-      </Typography>
-      <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 4 }}>
-        From landing pages to analytics — everything for your personal brand.
-      </Typography>
-      <Grid container spacing={3}>
-        {features.map((f) => (
-          <Grid item xs={12} md={4} key={f.title}>
-            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <CardContent>
-                <Box sx={{ fontSize: 36 }}>{f.icon}</Box>
-                <Typography variant="h6" mt={1}>{f.title}</Typography>
-                <Typography color="text.secondary" mt={1}>{f.desc}</Typography>
-              </CardContent>
-              <CardActions sx={{ mt: 'auto' }}>
-                <Button size="small">Learn more</Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
-  </AnimatedSection>
-);
-
-const testimonials = [
-  { name: 'Sara Ahmed', role: 'Freelance Designer', quote: 'Brandly helped me 3x my client leads in 2 months.' },
-  { name: 'Omar Ben', role: 'Agency Owner', quote: 'We onboarded clients faster using the portfolio templates.' },
-];
-
-const Testimonials: React.FC = () => (
-  <AnimatedSection>
-    <Container id="testimonials" sx={{ py: 6 }}>
-      <Typography variant="h4" fontWeight={700} textAlign="center" gutterBottom>
-        What our users say
-      </Typography>
-      <Grid container spacing={3} justifyContent="center">
-        {testimonials.map((t) => (
-          <Grid item xs={12} md={6} key={t.name}>
-            <Card>
-              <CardContent sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                <Avatar sx={{ bgcolor: 'primary.main' }}>{t.name[0]}</Avatar>
-                <Box>
-                  <Typography fontWeight={700}>{t.name}</Typography>
-                  <Typography variant="body2" color="text.secondary">{t.role}</Typography>
-                </Box>
-              </CardContent>
-              <Divider />
-              <CardContent>
-                <Typography>“{t.quote}”</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
-  </AnimatedSection>
-);
-
-const plans = [
-  { name: 'Starter', price: '$9', period: '/mo', bullets: ['1 site', 'Basic analytics', 'Email support'] },
-  { name: 'Pro', price: '$29', period: '/mo', bullets: ['5 sites', 'Advanced analytics', 'Priority support'], featured: true },
-  { name: 'Agency', price: '$99', period: '/mo', bullets: ['Unlimited sites', 'Team seats', 'Dedicated support'] },
-];
-
-const Pricing: React.FC = () => (
-  <AnimatedSection>
-    <Container id="pricing" sx={{ py: 6 }}>
-      <Typography variant="h4" fontWeight={700} textAlign="center" gutterBottom>
-        Pricing
-      </Typography>
-      <Typography color="text.secondary" align="center" sx={{ mb: 3 }}>
-        Simple pricing that scales with your brand.
-      </Typography>
-      <Grid container spacing={3} justifyContent="center">
-        {plans.map((p) => (
-          <Grid item xs={12} md={4} key={p.name}>
-            <Card sx={{ p: 2, border: p.featured ? '2px solid' : undefined, borderColor: p.featured ? 'primary.main' : undefined }}>
-              <CardContent>
-                <Typography variant="h6" fontWeight={700}>{p.name}</Typography>
-                <Typography variant="h4" mt={1} mb={1}>
-                  {p.price}
-                  <Typography component="span" fontSize={16} color="text.secondary">{p.period}</Typography>
-                </Typography>
-                {p.bullets.map((b) => (
-                  <Box key={b} sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
-                    <CheckCircleIcon fontSize="small" />
-                    <Typography>{b}</Typography>
-                  </Box>
-                ))}
-              </CardContent>
-              <CardActions>
-                <Button fullWidth variant={p.featured ? 'contained' : 'outlined'}>
-                  {p.featured ? 'Start Pro' : 'Choose'}
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
-  </AnimatedSection>
-);
-
-const Footer: React.FC = () => (
-  <Box component="footer" sx={{ py: 6, bgcolor: 'background.paper', mt: 6 }}>
-    <Container>
-      <Grid container spacing={3} alignItems="center">
-        <Grid item xs={12} md={6}>
-          <Typography variant="h6">Brandly</Typography>
-          <Typography variant="body2" color="text.secondary">
-            © {new Date().getFullYear()} Brandly — Build your personal brand.
-          </Typography>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Box sx={{ display: 'flex', gap: 1, justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
-            <IconButton><FacebookIcon /></IconButton>
-            <IconButton><TwitterIcon /></IconButton>
-            <IconButton><LinkedInIcon /></IconButton>
-          </Box>
-        </Grid>
-      </Grid>
-    </Container>
-  </Box>
-);
-
 export default function LandingPage() {
-  const prefersDark = useMediaQuery('(prefers-color-scheme: dark)');
-  const [mode, setMode] = useState<PaletteMode>(prefersDark ? 'dark' : 'light');
-  const theme = React.useMemo(() => getTheme(mode), [mode]);
   return (
     <>
-      <Head>
-        <title>Brandly — Personal Branding Platform</title>
-        <meta name="description" content="Build and manage your personal brand with Brandly" />
-      </Head>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-          <Navbar onToggleDark={() => setMode((m) => (m === 'light' ? 'dark' : 'light'))} mode={mode} />
-          <main>
-            <Hero />
-            <Features />
-            <Testimonials />
-            <Pricing />
-          </main>
-          <Footer />
-        </Box>
-      </ThemeProvider>
+      {/* HERO SECTION */}
+      <Box
+        sx={{
+          background: (theme) =>
+            theme.palette.mode === 'light'
+              ? 'linear-gradient(180deg, #f9fafb 0%, #ffffff 100%)'
+              : 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
+          py: { xs: 10, md: 14 },
+          textAlign: 'center',
+        }}
+      >
+        <Container maxWidth="md">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <Typography
+              variant="h2"
+              fontWeight={700}
+              gutterBottom
+              sx={{
+                fontSize: { xs: '2.4rem', md: '3.5rem' },
+                lineHeight: 1.2,
+              }}
+            >
+              Build your personal brand faster with AI.
+            </Typography>
+
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              sx={{ mt: 2, mb: 5, maxWidth: 600, mx: 'auto' }}
+            >
+              Turn your ideas into polished social content, personal websites,
+              and campaigns — all powered by intelligent automation.
+            </Typography>
+
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+              <Button variant="contained" color="secondary" size="large">
+                Get Started
+              </Button>
+              <Button variant="outlined" color="secondary" size="large">
+                Learn More
+              </Button>
+            </Box>
+          </motion.div>
+        </Container>
+      </Box>
+
+      {/* FEATURES SECTION */}
+      <Container sx={{ py: { xs: 10, md: 14 } }}>
+        <Typography
+          variant="h4"
+          fontWeight={700}
+          align="center"
+          gutterBottom
+          sx={{ mb: 8 }}
+        >
+          Powerful features to grow your brand
+        </Typography>
+
+        <Grid container spacing={4}>
+          {[
+            {
+              title: 'AI-Powered Content',
+              text: 'Generate stunning posts, bios, and website copy tailored to your audience in seconds.',
+            },
+            {
+              title: 'Personal Portfolio Builder',
+              text: 'Create a beautiful personal website without touching a line of code.',
+            },
+            {
+              title: 'Analytics Dashboard',
+              text: 'Track engagement, growth, and insights across your platforms.',
+            },
+          ].map((f, i) => (
+            <Grid key={i} size={{ xs: 12, md: 4 }}>
+              <Card
+                sx={{
+                  height: '100%',
+                  p: 2,
+                  borderRadius: 4,
+                  boxShadow: 3,
+                  bgcolor: (theme) =>
+                    theme.palette.mode === 'light'
+                      ? '#ffffff'
+                      : 'rgba(255, 255, 255, 0.05)',
+                  transition: '0.3s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 6,
+                  },
+                }}
+              >
+                <CardContent>
+                  <Typography
+                    variant="h6"
+                    fontWeight={600}
+                    gutterBottom
+                    sx={{ mb: 1 }}
+                  >
+                    {f.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {f.text}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+
+      {/* TESTIMONIALS */}
+      <Box
+        sx={{
+          backgroundColor: (theme) =>
+            theme.palette.mode === 'light' ? '#f9fafb' : '#1e293b',
+          py: { xs: 10, md: 14 },
+        }}
+      >
+        <Container>
+          <Typography
+            variant="h4"
+            fontWeight={700}
+            align="center"
+            gutterBottom
+            sx={{ mb: 8 }}
+          >
+            What our users say
+          </Typography>
+
+          <Grid container spacing={4}>
+            {[
+              {
+                name: 'Alex Johnson',
+                text: 'This tool saved me hours every week! I grew my audience faster than ever.',
+                avatar: '/avatars/avatar1.png',
+              },
+              {
+                name: 'Sophia Chen',
+                text: 'A must-have for creators. The AI content feels personal and authentic.',
+                avatar: '/avatars/avatar2.png',
+              },
+              {
+                name: 'Liam Patel',
+                text: 'Clean, modern, and smart — everything I wanted in a branding platform.',
+                avatar: '/avatars/avatar3.png',
+              },
+            ].map((t, i) => (
+              <Grid key={i} size={{ xs: 12, md: 4 }}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    borderRadius: 4,
+                    p: 3,
+                    boxShadow: 3,
+                    textAlign: 'center',
+                    bgcolor: (theme) =>
+                      theme.palette.mode === 'light'
+                        ? '#ffffff'
+                        : 'rgba(255,255,255,0.05)',
+                  }}
+                >
+                  <Avatar
+                    src={t.avatar}
+                    sx={{ width: 64, height: 64, mx: 'auto', mb: 2 }}
+                  />
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    {t.text}
+                  </Typography>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    {t.name}
+                  </Typography>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* FOOTER */}
+      <Box
+        sx={{
+          py: 6,
+          textAlign: 'center',
+          backgroundColor: (theme) =>
+            theme.palette.mode === 'light' ? '#111827' : '#0f172a',
+          color: '#fff',
+        }}
+      >
+        <Typography variant="body2">
+          © {new Date().getFullYear()} Personal Branding SaaS. All rights
+          reserved.
+        </Typography>
+      </Box>
     </>
   );
 }
