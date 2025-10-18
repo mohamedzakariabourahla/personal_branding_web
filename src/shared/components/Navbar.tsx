@@ -18,7 +18,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import ThemeToggle from '@/components/ui/ThemeToggle';
+import ThemeToggle from '@/shared/components/ThemeToggle';
 
 const navItems = ['Features', 'Pricing', 'Testimonials', 'Contact'];
 

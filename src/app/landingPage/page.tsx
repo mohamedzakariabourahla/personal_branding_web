@@ -1,4 +1,4 @@
-import LandingPage from '@/components/forms/langingPage';
+import LandingPage from '@/features/landingPage/components/langingPage';
 
 
 export default function LoginPage() {
