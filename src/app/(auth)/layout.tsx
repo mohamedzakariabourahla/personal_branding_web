@@ -1,5 +1,4 @@
-
-export default function HomeLayout({
+export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;

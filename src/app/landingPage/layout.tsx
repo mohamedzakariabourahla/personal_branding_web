@@ -1,5 +1,4 @@
-
-export default function HomeLayout({
+export default function LandingLayout({
   children,
 }: {
   children: React.ReactNode;
