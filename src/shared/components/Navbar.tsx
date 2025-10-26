@@ -183,7 +183,7 @@ export default function Navbar() {
             <>
               <IconButton
                 edge="end"
-                color="inherit"
+                color="primary"
                 onClick={toggleDrawer(true)}
                 aria-label="menu"
               >

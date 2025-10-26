@@ -37,7 +37,7 @@ export default function TestimonialsSection() {
               >
                 <Stack spacing={2} alignItems="center">
                   <Avatar
-                    src={`/avatars/user${i + 1}.png`}
+                    src={`/avatars/avatar${i + 1}.png`}
                     alt={t.name}
                     sx={{ width: 56, height: 56 }}
                   />
