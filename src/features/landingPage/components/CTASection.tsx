@@ -1,38 +1,22 @@
 'use client';
 
-import { Box, Button, Container, Typography } from '@mui/material';
+import { Button, Stack, Typography } from '@mui/material';
+import PageContainer from '@/shared/components/layouts/PageContainer';
 
 export default function CTASection() {
-    return (
-        <Box
-        sx={{
-          py: 12,
-          textAlign: 'center',
-          background: (theme) =>
-            theme.palette.mode === 'light'
-              ? 'linear-gradient(180deg, #111827 0%, #1f2937 100%)'
-              : 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
-          color: '#fff',
-        }}
-      >
-        <Container maxWidth="sm">
-          <Typography
-            variant="h4"
-            fontWeight={700}
-            gutterBottom
-            sx={{ mb: 3 }}
-          >
-            Ready to grow your social presence?
-          </Typography>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="large"
-            href="/register"
-          >
-            Start Now
-          </Button>
-        </Container>
-      </Box>
-    );
+  return (
+    <PageContainer>
+      <Stack spacing={3} alignItems="center" textAlign="center">
+        <Typography variant="h4" fontWeight={700}>
+          Ready to grow your social presence?
+        </Typography>
+        <Typography variant="subtitle1" color="text.secondary">
+          Join thousands of creators using AI to build their personal brand.
+        </Typography>
+        <Button variant="contained" size="large" color="primary">
+          Start Free
+        </Button>
+      </Stack>
+    </PageContainer>
+  );
 }

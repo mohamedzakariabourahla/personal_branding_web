@@ -1,4 +1,3 @@
-// src/shared/components/Navbar.tsx
 'use client';
 
 import React from 'react';
@@ -25,18 +24,18 @@ import ThemeToggle from '@/shared/components/ThemeToggle';
 
 type NavItem = { label: string; href: string };
 
-const publicNav: NavItem[] = [
+const PUBLIC_NAV: NavItem[] = [
   { label: 'Features', href: '/landingPage#features' },
   { label: 'How it works', href: '/landingPage#how-it-works' },
   { label: 'Testimonials', href: '/landingPage#testimonials' },
   { label: 'Contact', href: '/landingPage#contact' },
 ];
 
-const authNavForCreators: NavItem[] = [
+const CREATOR_NAV: NavItem[] = [
   { label: 'Dashboard', href: '/home/dashboard' },
-  { label: 'Create', href: '/home/contentCreation' },
-  { label: 'Analytics', href: '/home/dashboard' },
+  { label: 'Content Creation', href: '/home/contentCreation' },
   { label: 'Publishing', href: '/home/publishing' },
+  { label: 'Profile & Settings', href: '/home/profileAndSetting' },
 ];
 
 export default function Navbar() {
@@ -44,13 +43,13 @@ export default function Navbar() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const pathname = usePathname();
 
-  // TODO: replace with real auth state from your AuthProvider (useAuth hook)
-  const isAuthenticated = false; // e.g. const { isAuthenticated } = useAuth();
+  // 🔒 Later: connect this to your AuthProvider
+  const isAuthenticated = false;
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const toggleDrawer = (open: boolean) => () => setDrawerOpen(open);
 
-  const desktopNav = isAuthenticated ? authNavForCreators : publicNav;
+  const navItems = isAuthenticated ? CREATOR_NAV : PUBLIC_NAV;
 
   const renderNavButton = (item: NavItem) => {
     const isActive = pathname?.startsWith(item.href);
@@ -60,7 +59,9 @@ export default function Navbar() {
         component={Link}
         href={item.href}
         sx={{
-          color: isActive ? theme.palette.primary.main : theme.palette.text.primary,
+          color: isActive
+            ? theme.palette.primary.main
+            : theme.palette.text.primary,
           textTransform: 'none',
           fontWeight: 500,
           '&:hover': { color: theme.palette.primary.main },
@@ -76,38 +77,56 @@ export default function Navbar() {
       position="sticky"
       elevation={0}
       sx={{
-        backgroundColor:
-          theme.palette.mode === 'light'
-            ? 'rgba(255,255,255,0.8)'
-            : 'rgba(13,17,23,0.8)',
+        backgroundColor: theme.palette.background.paper,
         backdropFilter: 'blur(10px)',
-        borderBottom: `1px solid ${
-          theme.palette.mode === 'light' ? '#e5e7eb' : '#2d333b'
-        }`,
+        borderBottom: `1px solid ${theme.palette.divider}`,
       }}
     >
       <Container maxWidth="lg">
-        <Toolbar disableGutters sx={{ display: 'flex', justifyContent: 'space-between', py: 1 }}>
-          {/* Logo / Brand */}
-          <Box component={Link} href="/" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+        <Toolbar
+          disableGutters
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            py: 1,
+          }}
+        >
+          {/* ✅ Logo */}
+          <Box
+            component={Link}
+            href="/"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              textDecoration: 'none',
+            }}
+          >
             <Typography
               variant="h6"
               sx={{
                 fontWeight: 700,
                 color: theme.palette.text.primary,
                 letterSpacing: '-0.5px',
-                mr: 1,
               }}
             >
               PersonalBranding
             </Typography>
-            <Typography sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>AI</Typography>
+            <Typography
+              sx={{
+                color: theme.palette.primary.main,
+                fontWeight: 700,
+                ml: 0.5,
+              }}
+            >
+              AI
+            </Typography>
           </Box>
 
-          {/* Desktop nav */}
+          {/* ✅ Desktop Menu */}
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {desktopNav.map(renderNavButton)}
+              {navItems.map(renderNavButton)}
 
               {!isAuthenticated ? (
                 <>
@@ -115,18 +134,29 @@ export default function Navbar() {
                     component={Link}
                     href="/register"
                     variant="contained"
-                    color="secondary"
-                    sx={{ borderRadius: 2, px: 3, textTransform: 'none', fontWeight: 600 }}
+                    color="primary"
+                    sx={{
+                      borderRadius: 2,
+                      px: 3,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                    }}
                   >
                     Get Started
                   </Button>
                   <Button
                     component={Link}
                     href="/login"
-                    variant="text"
-                    sx={{ color: theme.palette.text.primary, textTransform: 'none', fontWeight: 600 }}
+                    variant="outlined"
+                    sx={{
+                      borderRadius: 2,
+                      px: 2.5,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      borderColor: theme.palette.divider,
+                    }}
                   >
-                    Sign in
+                    Sign In
                   </Button>
                 </>
               ) : (
@@ -134,7 +164,11 @@ export default function Navbar() {
                   component={Link}
                   href="/home/profileAndSetting"
                   variant="text"
-                  sx={{ color: theme.palette.text.primary, textTransform: 'none', fontWeight: 600 }}
+                  sx={{
+                    color: theme.palette.text.primary,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                  }}
                 >
                   Account
                 </Button>
@@ -144,17 +178,31 @@ export default function Navbar() {
             </Box>
           )}
 
-          {/* Mobile nav */}
+          {/* ✅ Mobile Menu */}
           {isMobile && (
             <>
-              <IconButton edge="end" color="inherit" onClick={toggleDrawer(true)} aria-label="open menu">
+              <IconButton
+                edge="end"
+                color="inherit"
+                onClick={toggleDrawer(true)}
+                aria-label="menu"
+              >
                 <MenuIcon />
               </IconButton>
 
-              <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
-                <Box sx={{ width: 280 }} role="presentation" onClick={toggleDrawer(false)} onKeyDown={toggleDrawer(false)}>
+              <Drawer
+                anchor="right"
+                open={drawerOpen}
+                onClose={toggleDrawer(false)}
+              >
+                <Box
+                  sx={{ width: 260 }}
+                  role="presentation"
+                  onClick={toggleDrawer(false)}
+                  onKeyDown={toggleDrawer(false)}
+                >
                   <List>
-                    {(isAuthenticated ? authNavForCreators : publicNav).map((item) => (
+                    {navItems.map((item) => (
                       <ListItem key={item.href} disablePadding>
                         <ListItemButton component={Link} href={item.href}>
                           <ListItemText primary={item.label} />
@@ -171,19 +219,28 @@ export default function Navbar() {
                         </ListItem>
                         <ListItem disablePadding>
                           <ListItemButton component={Link} href="/login">
-                            <ListItemText primary="Sign in" />
+                            <ListItemText primary="Sign In" />
                           </ListItemButton>
                         </ListItem>
                       </>
                     ) : (
                       <ListItem disablePadding>
-                        <ListItemButton component={Link} href="/home/profileAndSetting">
+                        <ListItemButton
+                          component={Link}
+                          href="/home/profileAndSetting"
+                        >
                           <ListItemText primary="Account" />
                         </ListItemButton>
                       </ListItem>
                     )}
 
-                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        p: 2,
+                      }}
+                    >
                       <ThemeToggle />
                     </Box>
                   </List>
