@@ -1,26 +1,27 @@
-'use client';
+"use client";
 
-import { Button, Stack, Typography } from '@mui/material';
-import PageContainer from '@/shared/components/layouts/PageContainer';
+import { Button, Stack, Typography } from "@mui/material";
+import PageContainer from "@/shared/components/layouts/PageContainer";
 
 export default function HeroSection() {
   return (
     <PageContainer>
       <Stack spacing={4} alignItems="center" textAlign="center">
         <Typography variant="h2" fontWeight={700}>
-          Grow your TikTok & Instagram brand with AI
+          Create & Schedule Viral Content with AI
         </Typography>
 
         <Typography variant="h6" color="text.secondary" maxWidth="sm">
-          Generate viral content ideas, captions, and carousels instantly — tailored to your audience.
+          Generate viral ideas, captions, and posts — then schedule and publish them automatically.
+          PersonalBrandingAI is your all-in-one tool to grow your social presence faster.
         </Typography>
 
         <Stack direction="row" spacing={2}>
           <Button variant="contained" size="large" color="primary">
-            Get Started
+            Get Started Free
           </Button>
           <Button variant="outlined" size="large" color="primary">
-            Try Demo
+            Try Live Demo
           </Button>
         </Stack>
       </Stack>

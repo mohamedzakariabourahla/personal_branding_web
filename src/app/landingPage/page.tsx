@@ -10,15 +10,17 @@ export default function LandingPage() {
   return (
     <>
       <Head>
-        <title>PersonalBrandingAI | Grow Your TikTok & Instagram Brand</title>
+        <title>
+          PersonalBrandingAI | Create, Schedule & Grow Your TikTok, Instagram, YouTube & Facebook Brand
+        </title>
         <meta
           name="description"
-          content="Generate viral content ideas, carousels, and scripts for your personal brand using AI."
+          content="PersonalBrandingAI helps you create, schedule, and publish viral content across TikTok, Instagram, YouTube, and Facebook using powerful AI tools for creators and brands."
         />
         <meta property="og:title" content="PersonalBrandingAI" />
         <meta
           property="og:description"
-          content="Build and grow your brand faster with AI-powered content tools."
+          content="Create, schedule, and publish posts with AI — from viral ideas to analytics. Grow your TikTok, Instagram, YouTube, and Facebook brand faster with PersonalBrandingAI."
         />
       </Head>
 
