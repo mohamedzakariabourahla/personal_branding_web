@@ -15,7 +15,9 @@ export async function registerUser(
   return response.data;
 }
 
-export async function submitOnboarding(payload: OnboardingRequest): Promise<OnboardingResponse> {
-  const response = await httpClient.post<OnboardingResponse>("/onboarding", payload);
+export async function submitOnboarding(
+  data: OnboardingRequest
+): Promise<OnboardingResponse> {
+  const response = await httpClient.post<OnboardingResponse>("/onboarding", data);
   return response.data;
 }
