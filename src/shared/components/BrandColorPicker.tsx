@@ -7,6 +7,7 @@ import {
   Popover,
   IconButton,
   TextField,
+  InputAdornment,
   Stack,
 } from "@mui/material";
 import { HexColorPicker } from "react-colorful";
@@ -15,13 +16,12 @@ import { useTheme } from "@mui/material/styles";
 export default function BrandColorPicker({
   value,
   onChange,
-}: {
+}: { 
   value: string;
   onChange: (color: string) => void;
 }) {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const [color, setColor] = useState(value || "#ffffff");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [color, setColor] = useState(value || "#AAAAAA");
   const theme = useTheme();
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -36,10 +36,12 @@ export default function BrandColorPicker({
   const open = Boolean(anchorEl);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setColor(val);
-    onChange(val);
+    const val = e.target.value.replace(/#/g, "");
+    const formatted = `#${val}`;
+    setColor(formatted);
+    onChange(formatted);
   };
+
 
   return (
     <Box>
@@ -70,13 +72,21 @@ export default function BrandColorPicker({
 
         {/* Manual color input (HEX) */}
         <TextField
-          inputRef={inputRef}
           label="Color"
           variant="outlined"
-          value={color}
+          value={color.replace(/^#/, "").toUpperCase()} // only show hex part
           onChange={handleInputChange}
-          sx={{ width: 160 }}
-          placeholder="#ffffff"
+          sx={{ width: 160, textTransform: "uppercase", color: "text.secondary" }}
+          placeholder="888888"
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start" sx={{ color: "text.secondary" }}>
+                  #
+                </InputAdornment>
+              ),
+            },
+          }}
         />
       </Stack>
 

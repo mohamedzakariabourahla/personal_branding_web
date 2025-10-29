@@ -89,10 +89,11 @@ export default function OnboardingForm() {
       sx={{
         maxWidth: "1000px",
         mx: "auto",
-        p: { xs: 3, md: 5 },
-        borderRadius: 4,
-        boxShadow: 4,
-        backgroundColor: "background.paper",
+        py: { xs: 1, md: 1 },
+        px: { xs: 1.5, md: 5 },
+        //borderRadius: 4,
+        //boxShadow: 4,
+        backgroundColor: "background.default",
       }}
     >
       <Typography
