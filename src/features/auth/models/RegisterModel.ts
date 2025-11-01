@@ -1,9 +1,1 @@
-export interface RegisterRequest {
-  name: string;
-  email: string;
-  password: string;
-}
-
-export interface RegisterResponse {
-  message: string;
-}
+export { RegisterRequest, RegisterResponse } from "./AuthModel";

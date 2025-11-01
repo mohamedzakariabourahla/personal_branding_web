@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -13,16 +13,41 @@ import {
 import { HexColorPicker } from "react-colorful";
 import { useTheme } from "@mui/material/styles";
 
+const DEFAULT_COLOR = "#AAAAAA";
+
 export default function BrandColorPicker({
   value,
   onChange,
-}: { 
+}: {
   value: string;
   onChange: (color: string) => void;
 }) {
+  const normalizeHex = useCallback((hex: string) => {
+    const trimmed = hex?.trim() ?? "";
+    if (!trimmed) return DEFAULT_COLOR;
+
+    return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
+  }, []);
+
+  const sanitizeHexInput = useCallback(
+    (raw: string) => raw.replace(/[^0-9a-fA-F]/g, "").slice(0, 6),
+    []
+  );
+
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const [color, setColor] = useState(value || "#AAAAAA");
+  const [color, setColor] = useState(() => normalizeHex(value || DEFAULT_COLOR));
+  const [inputValue, setInputValue] = useState(() =>
+    sanitizeHexInput(color.replace(/^#/, "")).toUpperCase()
+  );
   const theme = useTheme();
+
+  useEffect(() => {
+    const nextColor = normalizeHex(value || DEFAULT_COLOR);
+    setColor((current) =>
+      current.toLowerCase() === nextColor.toLowerCase() ? current : nextColor
+    );
+    setInputValue(nextColor.replace(/^#/, "").toUpperCase());
+  }, [normalizeHex, value]);
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -30,18 +55,45 @@ export default function BrandColorPicker({
 
   const handleClose = () => {
     setAnchorEl(null);
-    onChange(color);
+  };
+
+  const handleColorChange = (newColor: string) => {
+    const normalized = normalizeHex(newColor);
+    setColor(normalized);
+    setInputValue(normalized.replace(/^#/, "").toUpperCase());
+    onChange(normalized);
   };
 
   const open = Boolean(anchorEl);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value.replace(/#/g, "");
-    const formatted = `#${val}`;
-    setColor(formatted);
-    onChange(formatted);
+    const sanitized = sanitizeHexInput(e.target.value);
+    setInputValue(sanitized.toUpperCase());
+
+    if (sanitized.length === 6) {
+      handleColorChange(`#${sanitized}`);
+    }
   };
 
+  const handleInputBlur = () => {
+    const sanitized = sanitizeHexInput(inputValue);
+
+    if (sanitized.length === 3) {
+      const expanded = sanitized
+        .split("")
+        .map((char) => char.repeat(2))
+        .join("");
+      handleColorChange(`#${expanded}`);
+      return;
+    }
+
+    if (sanitized.length === 6) {
+      handleColorChange(`#${sanitized}`);
+      return;
+    }
+
+    setInputValue(color.replace(/^#/, "").toUpperCase());
+  };
 
   return (
     <Box>
@@ -74,12 +126,15 @@ export default function BrandColorPicker({
         <TextField
           label="Color"
           variant="outlined"
-          value={color.replace(/^#/, "").toUpperCase()} // only show hex part
+          value={inputValue}
           onChange={handleInputChange}
+          onBlur={handleInputBlur}
           sx={{ width: 160, textTransform: "uppercase", color: "text.secondary" }}
           placeholder="888888"
           slotProps={{
             input: {
+              inputMode: "text",
+              maxLength: 6,
               startAdornment: (
                 <InputAdornment position="start" sx={{ color: "text.secondary" }}>
                   #
@@ -107,7 +162,7 @@ export default function BrandColorPicker({
           },
         }}
       >
-        <HexColorPicker color={color} onChange={setColor} />
+        <HexColorPicker color={color} onChange={handleColorChange} />
       </Popover>
     </Box>
   );

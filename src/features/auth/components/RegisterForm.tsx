@@ -1,39 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Stack,
-  TextField,
-  Button,
-  Alert,
-  CircularProgress,
-} from "@mui/material";
+import { Stack, TextField, Button, Alert, CircularProgress } from "@mui/material";
 import { useRegister } from "../hooks/useRegister";
 
-export default function RegisterForm() {
-  const { loading, error, success, handleRegister } = useRegister();
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+type RegisterFormState = {
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+export default function RegisterForm() {
+  const { loading, error, success, successMessage, handleRegister } = useRegister();
+  const [form, setForm] = useState<RegisterFormState>({
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setValidationError(null);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await handleRegister(form);
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (form.password !== form.confirmPassword) {
+      setValidationError("Passwords do not match.");
+      return;
+    }
+    await handleRegister({ email: form.email, password: form.password });
   };
 
   return (
     <form onSubmit={handleSubmit} style={{ width: "100%" }}>
       <Stack spacing={3}>
-        <TextField
-          label="Full Name"
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          fullWidth
-          required
-        />
         <TextField
           label="Email"
           name="email"
@@ -52,12 +55,21 @@ export default function RegisterForm() {
           fullWidth
           required
         />
+        <TextField
+          label="Confirm Password"
+          name="confirmPassword"
+          type="password"
+          value={form.confirmPassword}
+          onChange={handleChange}
+          fullWidth
+          required
+        />
 
-        {error && <Alert severity="error">{error}</Alert>}
-        {success && (
-          <Alert severity="success">
-            Registration successful! You can now log in.
-          </Alert>
+        {(validationError || error) && (
+          <Alert severity="error">{validationError ?? error}</Alert>
+        )}
+        {success && successMessage && (
+          <Alert severity="success">{successMessage}</Alert>
         )}
 
         <Button
@@ -68,7 +80,7 @@ export default function RegisterForm() {
           sx={{ fontWeight: 700 }}
           disabled={loading}
         >
-          {loading ? <CircularProgress size={24} /> : "Register"}
+          {loading ? <CircularProgress size={24} /> : "Create Account"}
         </Button>
       </Stack>
     </form>

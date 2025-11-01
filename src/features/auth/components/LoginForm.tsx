@@ -11,7 +11,7 @@ import {
 import { useLogin } from "../hooks/useLogin";
 
 export default function LoginForm() {
-  const { loading, error, success, handleLogin } = useLogin();
+  const { loading, error, success, successMessage, handleLogin } = useLogin();
   const [form, setForm] = useState({ email: "", password: "" });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,10 +47,8 @@ export default function LoginForm() {
         />
 
         {error && <Alert severity="error">{error}</Alert>}
-        {success && (
-          <Alert severity="success">
-            Login successful! Redirecting...
-          </Alert>
+        {success && successMessage && (
+          <Alert severity="success">{successMessage} Redirecting...</Alert>
         )}
 
         <Button

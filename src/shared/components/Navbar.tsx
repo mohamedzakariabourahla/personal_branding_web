@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   AppBar,
   Toolbar,
@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ThemeToggle from '@/shared/components/ThemeToggle';
+import { useAuthSession } from '@/shared/providers/AuthSessionProvider';
 
 type NavItem = { label: string; href: string };
 
@@ -38,18 +39,24 @@ const CREATOR_NAV: NavItem[] = [
   { label: 'Profile & Settings', href: '/home/profileAndSetting' },
 ];
 
+const ACCOUNT_ROUTE = '/home/profileAndSetting';
+const ONBOARDING_ROUTE = '/onboarding';
+
 export default function Navbar() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, hydrated, clearSession } = useAuthSession();
 
-  // 🔒 Later: connect this to your AuthProvider
-  const isAuthenticated = false;
+  const isAuthenticated = hydrated && !!user;
+  const navItems = useMemo(
+    () => (isAuthenticated ? CREATOR_NAV : PUBLIC_NAV),
+    [isAuthenticated]
+  );
 
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const toggleDrawer = (open: boolean) => () => setDrawerOpen(open);
-
-  const navItems = isAuthenticated ? CREATOR_NAV : PUBLIC_NAV;
 
   const renderNavButton = (item: NavItem) => {
     const isActive = pathname?.startsWith(item.href);
@@ -59,9 +66,7 @@ export default function Navbar() {
         component={Link}
         href={item.href}
         sx={{
-          color: isActive
-            ? theme.palette.primary.main
-            : theme.palette.text.primary,
+          color: isActive ? theme.palette.primary.main : theme.palette.text.primary,
           textTransform: 'none',
           fontWeight: 500,
           '&:hover': { color: theme.palette.primary.main },
@@ -71,6 +76,16 @@ export default function Navbar() {
       </Button>
     );
   };
+
+  const handleLogout = () => {
+    clearSession();
+    router.push('/login');
+  };
+
+  const onboardingDestination =
+    user?.onboardingStatus === 'COMPLETED' ? ACCOUNT_ROUTE : ONBOARDING_ROUTE;
+  const onboardingLabel =
+    user?.onboardingStatus === 'COMPLETED' ? 'Account' : 'Finish Onboarding';
 
   return (
     <AppBar
@@ -92,7 +107,6 @@ export default function Navbar() {
             py: 1,
           }}
         >
-          {/* ✅ Logo */}
           <Box
             component={Link}
             href="/"
@@ -123,7 +137,6 @@ export default function Navbar() {
             </Typography>
           </Box>
 
-          {/* ✅ Desktop Menu */}
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               {navItems.map(renderNavButton)}
@@ -160,41 +173,51 @@ export default function Navbar() {
                   </Button>
                 </>
               ) : (
-                <Button
-                  component={Link}
-                  href="/home/profileAndSetting"
-                  variant="text"
-                  sx={{
-                    color: theme.palette.text.primary,
-                    textTransform: 'none',
-                    fontWeight: 600,
-                  }}
-                >
-                  Account
-                </Button>
+                <>
+                  <Button
+                    component={Link}
+                    href={onboardingDestination}
+                    variant="text"
+                    sx={{
+                      color: theme.palette.text.primary,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {onboardingLabel}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={handleLogout}
+                    sx={{
+                      borderRadius: 2,
+                      px: 2.5,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      borderColor: theme.palette.divider,
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </>
               )}
 
               <ThemeToggle />
             </Box>
           )}
 
-          {/* ✅ Mobile Menu */}
           {isMobile && (
             <>
               <IconButton
                 edge="end"
-                sx={{ color: (theme) => theme.palette.text.primary }}
+                sx={{ color: (muiTheme) => muiTheme.palette.text.primary }}
                 onClick={toggleDrawer(true)}
                 aria-label="menu"
               >
                 <MenuIcon />
               </IconButton>
 
-              <Drawer
-                anchor="right"
-                open={drawerOpen}
-                onClose={toggleDrawer(false)}
-              >
+              <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
                 <Box
                   sx={{ width: 260 }}
                   role="presentation"
@@ -224,14 +247,18 @@ export default function Navbar() {
                         </ListItem>
                       </>
                     ) : (
-                      <ListItem disablePadding>
-                        <ListItemButton
-                          component={Link}
-                          href="/home/profileAndSetting"
-                        >
-                          <ListItemText primary="Account" />
-                        </ListItemButton>
-                      </ListItem>
+                      <>
+                        <ListItem disablePadding>
+                          <ListItemButton component={Link} href={onboardingDestination}>
+                            <ListItemText primary={onboardingLabel} />
+                          </ListItemButton>
+                        </ListItem>
+                        <ListItem disablePadding>
+                          <ListItemButton onClick={handleLogout}>
+                            <ListItemText primary="Logout" />
+                          </ListItemButton>
+                        </ListItem>
+                      </>
                     )}
 
                     <Box
