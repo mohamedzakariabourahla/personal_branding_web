@@ -16,7 +16,6 @@ const httpClient: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
 });
 
 const refreshClient: AxiosInstance = axios.create({
@@ -24,7 +23,6 @@ const refreshClient: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
 });
 
 let inMemoryTokens = getStoredTokens();

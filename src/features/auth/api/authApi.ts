@@ -6,7 +6,6 @@ import {
   RefreshRequest,
 } from "../models/AuthModel";
 import { OnboardingRequest, OnboardingResponse, ReferenceDataCollections } from "../models/OnboardingModel";
-import axios, { AxiosError } from "axios";
 
 export async function loginUser(payload: LoginRequest): Promise<AuthResponse> {
   const response = await httpClient.post<AuthResponse>("/auth/login", payload);
@@ -30,31 +29,8 @@ export async function refreshTokens(
 export async function submitOnboarding(
   payload: OnboardingRequest
 ): Promise<OnboardingResponse> {
-  try {
-    console.log("submitOnboarding -> payload:", payload);
-    const response = await httpClient.post<OnboardingResponse>("/onboarding", payload);
-    console.log("submitOnboarding <- response:", {
-      status: response.status,
-      data: response.data,
-      headers: response.headers,
-    });
-    return response.data;
-  } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const axiosErr = err as AxiosError;
-      console.error("submitOnboarding ERROR (axios)", {
-        message: axiosErr.message,
-        url: axiosErr.config?.url,
-        method: axiosErr.config?.method,
-        status: axiosErr.response?.status,
-        data: axiosErr.response?.data,
-        headers: axiosErr.response?.headers,
-      });
-    } else {
-      console.error("submitOnboarding ERROR (unknown)", err);
-    }
-    throw err;
-  }
+  const response = await httpClient.post<OnboardingResponse>("/onboarding", payload);
+  return response.data;
 }
 
 export async function fetchOnboardingProfile(): Promise<OnboardingResponse | null> {

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { AxiosError } from "axios";
 import { submitOnboarding } from "../api/authApi";
 import { OnboardingRequest, OnboardingResponse } from "../models/OnboardingModel";
 import { useAuthSession } from "@/shared/providers/AuthSessionProvider";
@@ -46,10 +47,14 @@ export function useOnboarding() {
         router.replace("/dashboard");
       }, 800);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError("hello " + err.message);
+      const fallbackMessage = "Failed to complete onboarding. Please try again.";
+      if (err instanceof AxiosError) {
+        const responseDetail = (err.response?.data as { detail?: string; message?: string } | undefined)?.detail;
+        setError(responseDetail || err.message || fallbackMessage);
+      } else if (err instanceof Error) {
+        setError(err.message || fallbackMessage);
       } else {
-        setError("An unexpected error occurred.");
+        setError(fallbackMessage);
       }
     } finally {
       setLoading(false);
