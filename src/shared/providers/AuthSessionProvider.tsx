@@ -10,6 +10,7 @@ import {
   persistTokens,
   subscribeToSession,
 } from "@/features/auth/utils/authStorage";
+import { logoutUser } from "@/features/auth/api/authApi";
 
 type AuthSessionValue = {
   user: AuthUser | null;
@@ -18,6 +19,7 @@ type AuthSessionValue = {
   setSession: (session: AuthResponse) => void;
   updateTokens: (tokens: AuthTokens, user?: AuthUser | null) => void;
   clearSession: () => void;
+  logout: () => Promise<void>;
 };
 
 const AuthSessionContext = createContext<AuthSessionValue | undefined>(undefined);
@@ -65,6 +67,20 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
     clearSessionStorage();
   }, [applySession]);
 
+  const logout = useCallback(async () => {
+    const currentTokens = tokens ?? loadSession()?.tokens ?? null;
+    try {
+      if (currentTokens?.refreshToken) {
+        await logoutUser(currentTokens.refreshToken);
+      }
+    } catch (error) {
+      // We still clear the local session even if the request fails.
+      console.warn("Logout request failed", error);
+    } finally {
+      clearSession();
+    }
+  }, [tokens, clearSession]);
+
   const value = useMemo<AuthSessionValue>(
     () => ({
       user,
@@ -73,8 +89,9 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
       setSession,
       updateTokens,
       clearSession,
+      logout,
     }),
-    [user, tokens, hydrated, setSession, updateTokens, clearSession]
+    [user, tokens, hydrated, setSession, updateTokens, clearSession, logout]
   );
 
   return <AuthSessionContext.Provider value={value}>{children}</AuthSessionContext.Provider>;

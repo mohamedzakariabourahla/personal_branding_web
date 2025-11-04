@@ -26,6 +26,18 @@ export async function refreshTokens(
   return response.data;
 }
 
+export async function logoutUser(refreshToken: string): Promise<void> {
+  await httpClient.post("/auth/logout", { refreshToken });
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  await httpClient.post("/auth/password/reset-request", { email });
+}
+
+export async function submitPasswordReset(token: string, newPassword: string): Promise<void> {
+  await httpClient.post("/auth/password/reset", { token, newPassword });
+}
+
 export async function submitOnboarding(
   payload: OnboardingRequest
 ): Promise<OnboardingResponse> {

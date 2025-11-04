@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -33,13 +33,13 @@ const PUBLIC_NAV: NavItem[] = [
 ];
 
 const CREATOR_NAV: NavItem[] = [
-  { label: 'Dashboard', href: '/home/dashboard' },
-  { label: 'Content Creation', href: '/home/contentCreation' },
-  { label: 'Publishing', href: '/home/publishing' },
-  { label: 'Profile & Settings', href: '/home/profileAndSetting' },
+  { label: 'Dashboard', href: '/dashboard' },
+  { label: 'Content Creation', href: '/contentCreation' },
+  { label: 'Publishing', href: '/publishing' },
+  { label: 'Profile & Settings', href: '/profileAndSetting' },
 ];
 
-const ACCOUNT_ROUTE = '/home/profileAndSetting';
+const ACCOUNT_ROUTE = '/profileAndSetting';
 const ONBOARDING_ROUTE = '/onboarding';
 
 export default function Navbar() {
@@ -47,7 +47,7 @@ export default function Navbar() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const pathname = usePathname();
   const router = useRouter();
-  const { user, hydrated, clearSession } = useAuthSession();
+const { user, hydrated, logout } = useAuthSession();
 
   const isAuthenticated = hydrated && !!user;
   const navItems = useMemo(
@@ -77,10 +77,13 @@ export default function Navbar() {
     );
   };
 
-  const handleLogout = () => {
-    clearSession();
-    router.push('/login');
-  };
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout();
+    } finally {
+      router.push('/login');
+    }
+  }, [logout, router]);
 
   const onboardingDestination =
     user?.onboardingStatus === 'COMPLETED' ? ACCOUNT_ROUTE : ONBOARDING_ROUTE;
@@ -188,7 +191,7 @@ export default function Navbar() {
                   </Button>
                   <Button
                     variant="outlined"
-                    onClick={handleLogout}
+                    onClick={() => { void handleLogout(); }}
                     sx={{
                       borderRadius: 2,
                       px: 2.5,
@@ -254,7 +257,7 @@ export default function Navbar() {
                           </ListItemButton>
                         </ListItem>
                         <ListItem disablePadding>
-                          <ListItemButton onClick={handleLogout}>
+                          <ListItemButton onClick={() => { void handleLogout(); }}>
                             <ListItemText primary="Logout" />
                           </ListItemButton>
                         </ListItem>
