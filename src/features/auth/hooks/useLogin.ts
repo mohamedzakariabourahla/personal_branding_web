@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { AxiosError } from "axios";
 import { loginUser } from "../api/authApi";
 import { LoginRequest } from "../models/LoginModel";
 import { AuthResponse } from "../models/AuthModel";
@@ -45,10 +46,32 @@ export function useLogin() {
         }
       }, 800);
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
+      if (err instanceof AxiosError) {
+        const detail =
+          (err.response?.data as { detail?: string; message?: string; errorCode?: string; retryAfterSeconds?: number } | undefined)
+            ?.detail ??
+          (err.response?.data as { detail?: string; message?: string; errorCode?: string; retryAfterSeconds?: number } | undefined)
+            ?.message;
+        const errorCode = (err.response?.data as { errorCode?: string } | undefined)?.errorCode;
+        if (errorCode === "INVALID_CREDENTIALS") {
+          setError("The email or password you entered is incorrect.");
+        } else if (errorCode === "LOGIN_RATE_LIMITED") {
+          const retryAfter =
+            (err.response?.data as { retryAfterSeconds?: number } | undefined)?.retryAfterSeconds ??
+            Number(err.response?.headers?.["retry-after"]) ??
+            null;
+          setError(
+            retryAfter && Number.isFinite(retryAfter)
+              ? `Too many failed attempts. Please wait ${Math.ceil(Number(retryAfter) / 60)} minute(s) and try again.`
+              : "Too many failed attempts. Please wait a few minutes and try again."
+          );
+        } else {
+          setError(detail ?? "Unable to sign in right now. Please try again.");
+        }
+      } else if (err instanceof Error) {
+        setError(err.message || "Unable to sign in right now. Please try again.");
       } else {
-        setError("An unexpected error occurred.");
+        setError("Unable to sign in right now. Please try again.");
       }
     } finally {
       setLoading(false);
