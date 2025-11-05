@@ -43,12 +43,16 @@ export async function verifyEmail(token: string): Promise<void> {
   await httpClient.post("/auth/email/verify", { token });
 }
 
-export async function resendVerificationEmail(): Promise<void> {
-  await httpClient.post("/auth/email/resend");
+export async function resendVerificationEmail(): Promise<number | null> {
+  const response = await httpClient.post("/auth/email/resend");
+  const retryAfter = Number(response.headers["retry-after"]);
+  return Number.isFinite(retryAfter) ? retryAfter : null;
 }
 
-export async function resendVerificationEmailGuest(email: string): Promise<void> {
-  await httpClient.post("/auth/email/resend-guest", { email });
+export async function resendVerificationEmailGuest(email: string): Promise<number | null> {
+  const response = await httpClient.post("/auth/email/resend-guest", { email });
+  const retryAfter = Number(response.headers["retry-after"]);
+  return Number.isFinite(retryAfter) ? retryAfter : null;
 }
 
 export async function submitOnboarding(

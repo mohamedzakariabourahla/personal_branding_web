@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthSession } from "@/shared/providers/AuthSessionProvider";
 import { requestPasswordReset, resendVerificationEmail } from "@/features/auth/api/authApi";
 
@@ -19,6 +19,7 @@ type ProfileSettingsResult = {
   emailVerified: boolean;
   submittingReset: boolean;
   resendingVerification: boolean;
+  verificationCooldown: number;
   feedback: Feedback | null;
   requestPasswordReset: () => Promise<void>;
   resendEmailVerification: () => Promise<void>;
@@ -32,11 +33,45 @@ export function useProfileSettings(): ProfileSettingsResult {
   const [submittingReset, setSubmittingReset] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [verificationCooldown, setVerificationCooldown] = useState(0);
+  const cooldownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const onboardingStatus = useMemo(() => user?.onboardingStatus ?? "NOT_STARTED", [user]);
   const roles = useMemo(() => user?.roles ?? [], [user]);
   const person = user?.person ?? null;
   const emailVerified = user?.emailVerified ?? false;
+
+  const formatCooldown = useCallback((seconds: number) => {
+    if (seconds >= 60) {
+      const minutes = Math.max(Math.ceil(seconds / 60), 1);
+      return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+    }
+    const normalized = Math.max(seconds, 0);
+    return `${normalized} second${normalized === 1 ? "" : "s"}`;
+  }, []);
+
+  useEffect(() => {
+    if (verificationCooldown <= 0) {
+      if (cooldownTimerRef.current) {
+        clearInterval(cooldownTimerRef.current);
+        cooldownTimerRef.current = null;
+      }
+      return;
+    }
+
+    if (!cooldownTimerRef.current) {
+      cooldownTimerRef.current = setInterval(() => {
+        setVerificationCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+
+    return () => {
+      if (cooldownTimerRef.current) {
+        clearInterval(cooldownTimerRef.current);
+        cooldownTimerRef.current = null;
+      }
+    };
+  }, [verificationCooldown]);
 
   const handlePasswordReset = useCallback(async () => {
     if (!user?.email) {
@@ -66,10 +101,18 @@ export function useProfileSettings(): ProfileSettingsResult {
   const handleResendVerification = useCallback(async () => {
     setResendingVerification(true);
     try {
-      await resendVerificationEmail();
+      const cooldownSeconds = await resendVerificationEmail();
+      const normalized =
+        cooldownSeconds !== null && Number.isFinite(cooldownSeconds)
+          ? Math.max(Math.ceil(cooldownSeconds), 0)
+          : 60;
+      setVerificationCooldown(normalized);
       setFeedback({
         severity: "success",
-        message: "Verification email sent. Please check your inbox.",
+        message:
+          normalized > 0
+            ? `Verification email sent. You can request another in ${formatCooldown(normalized)}.`
+            : "Verification email sent. Please check your inbox.",
       });
     } catch (err) {
       const message =
@@ -80,7 +123,7 @@ export function useProfileSettings(): ProfileSettingsResult {
     } finally {
       setResendingVerification(false);
     }
-  }, []);
+  }, [formatCooldown]);
 
   const clearFeedback = useCallback(() => setFeedback(null), []);
 
@@ -96,6 +139,7 @@ export function useProfileSettings(): ProfileSettingsResult {
     feedback,
     requestPasswordReset: handlePasswordReset,
     resendEmailVerification: handleResendVerification,
+    verificationCooldown,
     clearFeedback,
     logout,
     updateTokens,

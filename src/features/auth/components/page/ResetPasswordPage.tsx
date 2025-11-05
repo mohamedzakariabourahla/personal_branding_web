@@ -5,15 +5,18 @@ import { useCallback } from 'react';
 import { Container, Stack } from '@mui/material';
 import PageContainer from '@/shared/components/layouts/PageContainer';
 import { ResetPasswordForm } from '@/features/auth/components/ResetPasswordForm';
+import { useAuthSession } from '@/shared/providers/AuthSessionProvider';
 
 export function ResetPasswordPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token') ?? '';
+  const { clearSession } = useAuthSession();
 
   const handleSuccess = useCallback(() => {
+    clearSession();
     router.replace('/login');
-  }, [router]);
+  }, [clearSession, router]);
 
   return (
     <PageContainer>

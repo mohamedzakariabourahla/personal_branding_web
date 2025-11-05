@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { AxiosError } from "axios";
 import { loginUser } from "../api/authApi";
 import { LoginRequest } from "../models/LoginModel";
 import { AuthResponse } from "../models/AuthModel";
 import { useAuthSession } from "@/shared/providers/AuthSessionProvider";
+import { resolveAuthError } from "@/features/auth/utils/errorHandling";
 
 export function useLogin() {
   const [loading, setLoading] = useState(false);
@@ -51,37 +51,9 @@ export function useLogin() {
         }
       }, 800);
     } catch (err: unknown) {
-      if (err instanceof AxiosError) {
-        const responseData = err.response?.data as {
-          detail?: string;
-          message?: string;
-          errorCode?: string;
-          retryAfterSeconds?: number;
-        } | undefined;
-        const code = responseData?.errorCode ?? null;
-        setErrorCode(code);
-
-        if (code === "INVALID_CREDENTIALS") {
-          setError("The email or password you entered is incorrect.");
-        } else if (code === "USER_EMAIL_NOT_VERIFIED") {
-          setError("Please verify your email address before signing in. Check your inbox for the verification link.");
-        } else if (code === "LOGIN_RATE_LIMITED") {
-          const retryAfter = responseData?.retryAfterSeconds ?? Number(err.response?.headers?.["retry-after"]) ?? null;
-          setError(
-            retryAfter && Number.isFinite(retryAfter)
-              ? `Too many failed attempts. Please wait ${Math.ceil(Number(retryAfter) / 60)} minute(s) and try again.`
-              : "Too many failed attempts. Please wait a few minutes and try again."
-          );
-        } else {
-          setError(responseData?.detail ?? responseData?.message ?? "Unable to sign in right now. Please try again.");
-        }
-      } else if (err instanceof Error) {
-        setError(err.message || "Unable to sign in right now. Please try again.");
-        setErrorCode(null);
-      } else {
-        setError("Unable to sign in right now. Please try again.");
-        setErrorCode(null);
-      }
+      const { message, code } = resolveAuthError(err, "login");
+      setError(message);
+      setErrorCode(code);
     } finally {
       setLoading(false);
     }

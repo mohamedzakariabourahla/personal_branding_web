@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useMemo, useState } from "react";
-import { Stack, TextField, Button, Alert, CircularProgress, Typography, Link } from "@mui/material";
+import { Stack, TextField, Button, Alert, CircularProgress, Typography } from "@mui/material";
 import { useRegister } from "../hooks/useRegister";
 import NextLink from "next/link";
 import { useVerificationResend } from "@/features/auth/hooks/useVerificationResend";

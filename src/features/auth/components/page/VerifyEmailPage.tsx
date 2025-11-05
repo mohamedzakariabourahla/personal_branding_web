@@ -20,16 +20,17 @@ import { useEmailVerification } from "@/features/auth/hooks/useEmailVerification
 export function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const queryToken = searchParams.get("token") ?? "";
+  const queryToken = (searchParams.get("token") ?? "").trim();
   const { token, setToken, status, error, verify, reset } = useEmailVerification(queryToken);
 
   const isSuccess = status === "success";
   const isPending = status === "pending";
   const isError = status === "error";
+  const showManualTokenEntry = !isSuccess && (!queryToken || isError);
 
   const helperMessage = useMemo(() => {
     if (isSuccess) {
-      return "Your email is verified—feel free to sign in.";
+      return "Your email is verified; you can sign in now.";
     }
     if (isError && error) {
       return error;
@@ -76,12 +77,12 @@ export function VerifyEmailPage() {
                 <Alert severity="info">{helperMessage}</Alert>
               )}
 
-              {!isSuccess && (
+              {showManualTokenEntry && (
                 <TextField
                   label="Verification token"
                   value={token}
                   onChange={(event) => setToken(event.target.value)}
-                  helperText={helperMessage}
+                  helperText={!isError ? "Paste the token from your email." : undefined}
                   disabled={isPending}
                   required
                 />

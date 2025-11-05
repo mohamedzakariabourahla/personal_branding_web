@@ -30,6 +30,7 @@ export function ProfileSettingsView() {
     emailVerified,
     submittingReset,
     resendingVerification,
+    verificationCooldown,
     feedback,
     requestPasswordReset,
     resendEmailVerification,
@@ -77,10 +78,11 @@ export function ProfileSettingsView() {
         <SecurityCard
           emailVerified={emailVerified}
           resendingVerification={resendingVerification}
+          verificationCooldown={verificationCooldown}
           submittingReset={submittingReset}
-          onResendVerification={() => void resendEmailVerification()}
-          onRequestReset={() => void requestPasswordReset()}
-          onLogout={() => void handleLogout()}
+          onResendVerification={resendEmailVerification}
+          onRequestReset={requestPasswordReset}
+          onLogout={handleLogout}
         />
       </Stack>
 
@@ -167,20 +169,29 @@ function BrandProfileCard({ fullName, companyName, position, phoneNumber }: Bran
 type SecurityCardProps = {
   emailVerified: boolean;
   resendingVerification: boolean;
+  verificationCooldown: number;
   submittingReset: boolean;
-  onResendVerification: () => void;
-  onRequestReset: () => void;
-  onLogout: () => void;
+  onResendVerification: () => void | Promise<void>;
+  onRequestReset: () => void | Promise<void>;
+  onLogout: () => void | Promise<void>;
 };
 
 function SecurityCard({
   emailVerified,
   resendingVerification,
+  verificationCooldown,
   submittingReset,
   onResendVerification,
   onRequestReset,
   onLogout,
 }: SecurityCardProps) {
+  const remaining = Math.max(verificationCooldown, 0);
+  let cooldownLabel = `${remaining} second${remaining === 1 ? "" : "s"}`;
+  if (remaining >= 60) {
+    const minutes = Math.max(Math.ceil(remaining / 60), 1);
+    cooldownLabel = `${minutes} minute${minutes === 1 ? "" : "s"}`;
+  }
+
   return (
     <Card variant="outlined">
       <CardHeader title="Security" sx={{ pb: 0 }} />
@@ -194,13 +205,22 @@ function SecurityCard({
                 color="warning"
                 size="small"
                 onClick={onResendVerification}
-                disabled={resendingVerification}
+                disabled={resendingVerification || verificationCooldown > 0}
               >
-                {resendingVerification ? "Sending..." : "Resend email"}
+                {resendingVerification
+                  ? "Sending..."
+                  : verificationCooldown > 0
+                  ? `Resend (${remaining}s)`
+                  : "Resend email"}
               </Button>
             }
           >
             Your email address is not verified. Please confirm it to avoid losing access to your account.
+            {verificationCooldown > 0 && (
+              <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                You can request another verification email in {cooldownLabel}.
+              </Typography>
+            )}
           </Alert>
         )}
 

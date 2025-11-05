@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { useLogin } from "../hooks/useLogin";
 import { useVerificationResend } from "@/features/auth/hooks/useVerificationResend";
+import NextLink from "next/link";
 
 export default function LoginForm() {
   const { loading, error, errorCode, success, successMessage, lastAttemptedEmail, handleLogin } = useLogin();
@@ -23,6 +24,8 @@ export default function LoginForm() {
     errorMessage: resendError,
     resetFeedback,
   } = useVerificationResend(lastAttemptedEmail ?? form.email);
+  const targetEmail = (lastAttemptedEmail ?? form.email).trim();
+  const verifyHref = targetEmail ? `/verify-email?email=${encodeURIComponent(targetEmail)}` : "/verify-email";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -102,14 +105,21 @@ export default function LoginForm() {
         )}
 
         <Button
-          type="submit"
+          component={showResendPrompt ? NextLink : "button"}
+          type={showResendPrompt ? undefined : "submit"}
+          href={showResendPrompt ? verifyHref : undefined}
           variant="contained"
           color="primary"
           size="large"
-          disabled={loading}
+          disabled={loading || (showResendPrompt && resending)}
           sx={{ fontWeight: 700 }}
+          onClick={showResendPrompt ? undefined : undefined}
         >
-          {loading ? <CircularProgress size={24} /> : "Login"}
+          {loading
+            ? <CircularProgress size={24} />
+            : showResendPrompt
+            ? "Go to email verification"
+            : "Login"}
         </Button>
       </Stack>
     </form>

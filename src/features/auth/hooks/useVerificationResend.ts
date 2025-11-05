@@ -1,8 +1,8 @@
 ﻿"use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AxiosError } from "axios";
 import { resendVerificationEmailGuest } from "@/features/auth/api/authApi";
+import { resolveAuthError } from "@/features/auth/utils/errorHandling";
 
 const DEFAULT_COOLDOWN_SECONDS = 60;
 
@@ -53,12 +53,16 @@ export function useVerificationResend(initialEmail?: string) {
         setResending(true);
         setErrorMessage(null);
         setSuccessMessage(null);
-        await resendVerificationEmailGuest(targetEmail);
+        const cooldownSeconds = await resendVerificationEmailGuest(targetEmail);
         lastEmailRef.current = targetEmail;
         setSuccessMessage("Verification email sent. Check your inbox.");
-        setCooldown(DEFAULT_COOLDOWN_SECONDS);
+        const normalizedCooldown =
+          cooldownSeconds !== null && Number.isFinite(cooldownSeconds)
+            ? Math.max(Math.ceil(cooldownSeconds), 0)
+            : DEFAULT_COOLDOWN_SECONDS;
+        setCooldown(normalizedCooldown);
       } catch (error) {
-        const message = resolveError(error);
+        const { message } = resolveAuthError(error, "verification-resend");
         setErrorMessage(message);
       } finally {
         setResending(false);
@@ -80,22 +84,4 @@ export function useVerificationResend(initialEmail?: string) {
     errorMessage,
     resetFeedback,
   };
-}
-
-function resolveError(error: unknown): string {
-  if (error instanceof AxiosError) {
-    const data = error.response?.data as { message?: string; detail?: string; errorCode?: string; retryAfterSeconds?: number } | undefined;
-    const retryAfter = data?.retryAfterSeconds ?? Number(error.response?.headers?.["retry-after"] ?? NaN);
-    if (data?.errorCode === "EMAIL_VERIFICATION_RATE_LIMITED" && Number.isFinite(retryAfter)) {
-      const seconds = Math.max(Math.ceil(Number(retryAfter)), 1);
-      return `You can request another verification email in ${seconds} second${seconds === 1 ? "" : "s"}.`;
-    }
-    return data?.detail ?? data?.message ?? "Unable to send verification email right now. Please try again.";
-  }
-
-  if (error instanceof Error) {
-    return error.message || "Unable to send verification email right now. Please try again.";
-  }
-
-  return "Unable to send verification email right now. Please try again.";
 }
