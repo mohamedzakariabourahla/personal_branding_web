@@ -4,6 +4,7 @@ import {
   LoginRequest,
   RegisterRequest,
   RefreshRequest,
+  RegistrationPendingResponse,
 } from "../models/AuthModel";
 import { OnboardingRequest, OnboardingResponse, ReferenceDataCollections } from "../models/OnboardingModel";
 
@@ -14,8 +15,8 @@ export async function loginUser(payload: LoginRequest): Promise<AuthResponse> {
 
 export async function registerUser(
   payload: RegisterRequest
-): Promise<AuthResponse> {
-  const response = await httpClient.post<AuthResponse>("/auth/register", payload);
+): Promise<RegistrationPendingResponse> {
+  const response = await httpClient.post<RegistrationPendingResponse>("/auth/register", payload);
   return response.data;
 }
 
@@ -36,6 +37,18 @@ export async function requestPasswordReset(email: string): Promise<void> {
 
 export async function submitPasswordReset(token: string, newPassword: string): Promise<void> {
   await httpClient.post("/auth/password/reset", { token, newPassword });
+}
+
+export async function verifyEmail(token: string): Promise<void> {
+  await httpClient.post("/auth/email/verify", { token });
+}
+
+export async function resendVerificationEmail(): Promise<void> {
+  await httpClient.post("/auth/email/resend");
+}
+
+export async function resendVerificationEmailGuest(email: string): Promise<void> {
+  await httpClient.post("/auth/email/resend-guest", { email });
 }
 
 export async function submitOnboarding(

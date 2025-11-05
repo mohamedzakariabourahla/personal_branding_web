@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import {
@@ -7,12 +7,22 @@ import {
   Button,
   Alert,
   CircularProgress,
+  Typography,
 } from "@mui/material";
 import { useLogin } from "../hooks/useLogin";
+import { useVerificationResend } from "@/features/auth/hooks/useVerificationResend";
 
 export default function LoginForm() {
-  const { loading, error, success, successMessage, handleLogin } = useLogin();
+  const { loading, error, errorCode, success, successMessage, lastAttemptedEmail, handleLogin } = useLogin();
   const [form, setForm] = useState({ email: "", password: "" });
+  const {
+    resend,
+    resending,
+    cooldown,
+    successMessage: resendSuccess,
+    errorMessage: resendError,
+    resetFeedback,
+  } = useVerificationResend(lastAttemptedEmail ?? form.email);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,6 +32,8 @@ export default function LoginForm() {
     e.preventDefault();
     await handleLogin(form);
   };
+
+  const showResendPrompt = errorCode === "USER_EMAIL_NOT_VERIFIED";
 
   return (
     <form onSubmit={handleSubmit} style={{ width: "100%" }}>
@@ -46,7 +58,45 @@ export default function LoginForm() {
           required
         />
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {error && (
+          <Alert
+            severity={showResendPrompt ? "warning" : "error"}
+            action={
+              showResendPrompt ? (
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={() => resend(lastAttemptedEmail ?? form.email)}
+                  disabled={resending || cooldown > 0}
+                >
+                  {resending
+                    ? "Sending..."
+                    : cooldown > 0
+                    ? `Resend (${cooldown}s)`
+                    : "Resend email"}
+                </Button>
+              ) : undefined
+            }
+          >
+            {error}
+          </Alert>
+        )}
+
+        {showResendPrompt && (resendSuccess || resendError) && (
+          <Alert
+            severity={resendError ? "error" : "success"}
+            onClose={resendError ? resetFeedback : undefined}
+          >
+            {resendError ?? resendSuccess}
+          </Alert>
+        )}
+
+        {showResendPrompt && !resendError && cooldown > 0 && (
+          <Typography variant="caption" color="text.secondary">
+            You can request another email in {cooldown} second{cooldown === 1 ? "" : "s"}.
+          </Typography>
+        )}
+
         {success && successMessage && (
           <Alert severity="success">{successMessage} Redirecting...</Alert>
         )}

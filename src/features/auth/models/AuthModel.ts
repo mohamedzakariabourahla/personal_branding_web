@@ -32,6 +32,7 @@ export interface AuthUser {
   id: number;
   email: string;
   active: boolean;
+  emailVerified: boolean;
   onboardingStatus: OnboardingStatus;
   roles: string[];
   person: PersonProfile | null;
@@ -61,7 +62,14 @@ export interface RegisterRequest {
   password: string;
 }
 
-export type RegisterResponse = AuthResponse;
+export interface RegistrationPendingResponse {
+  email: string;
+  verificationExpiresAt: string;
+  verificationRequired: boolean;
+  message: string;
+}
+
+export type RegisterResponse = RegistrationPendingResponse;
 
 export interface RefreshRequest {
   refreshToken: string;

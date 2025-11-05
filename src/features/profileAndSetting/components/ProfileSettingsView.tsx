@@ -9,14 +9,16 @@ import {
   CardContent,
   CardHeader,
   Chip,
-  Divider,
   Grid,
+  Divider,
   Snackbar,
   Stack,
   Typography,
 } from "@mui/material";
 import PageContainer from "@/shared/components/layouts/PageContainer";
 import { useProfileSettings } from "../hooks/useProfileSettings";
+
+const FALLBACK_VALUE = "N/A";
 
 export function ProfileSettingsView() {
   const router = useRouter();
@@ -25,9 +27,12 @@ export function ProfileSettingsView() {
     onboardingStatus,
     roles,
     person,
+    emailVerified,
     submittingReset,
+    resendingVerification,
     feedback,
     requestPasswordReset,
+    resendEmailVerification,
     clearFeedback,
     logout,
   } = useProfileSettings();
@@ -52,24 +57,28 @@ export function ProfileSettingsView() {
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 4 }}>
             <AccountOverviewCard
-              email={user?.email ?? "—"}
+              email={user?.email ?? FALLBACK_VALUE}
               onboardingStatus={onboardingStatus}
               roles={roles}
+              emailVerified={emailVerified}
             />
           </Grid>
 
           <Grid size={{ xs: 12, md: 4 }}>
             <BrandProfileCard
-              fullName={person?.fullName ?? "—"}
-              companyName={person?.companyName ?? "—"}
-              position={person?.position ?? "—"}
-              phoneNumber={person?.phoneNumber ?? "—"}
+              fullName={person?.fullName ?? FALLBACK_VALUE}
+              companyName={person?.companyName ?? FALLBACK_VALUE}
+              position={person?.position ?? FALLBACK_VALUE}
+              phoneNumber={person?.phoneNumber ?? FALLBACK_VALUE}
             />
           </Grid>
         </Grid>
 
         <SecurityCard
+          emailVerified={emailVerified}
+          resendingVerification={resendingVerification}
           submittingReset={submittingReset}
+          onResendVerification={() => void resendEmailVerification()}
           onRequestReset={() => void requestPasswordReset()}
           onLogout={() => void handleLogout()}
         />
@@ -98,28 +107,32 @@ type AccountOverviewProps = {
   email: string;
   onboardingStatus: string;
   roles: string[];
+  emailVerified: boolean;
 };
 
-function AccountOverviewCard({ email, onboardingStatus, roles }: AccountOverviewProps) {
+function AccountOverviewCard({ email, onboardingStatus, roles, emailVerified }: AccountOverviewProps) {
+  const formattedStatus = onboardingStatus.replace(/_/g, " ").toLowerCase();
+  const normalizedRoles = roles.length ? roles : ["CLIENT"];
+
   return (
     <Card variant="outlined">
       <CardHeader title="Account Overview" sx={{ pb: 0 }} />
       <CardContent>
         <Stack spacing={1.5}>
           <InfoRow label="Email" value={email} />
-          <InfoRow label="Status" value={onboardingStatus.replace("_", " ")} />
+          <InfoRow label="Email verification" value={emailVerified ? "Verified" : "Pending verification"} />
+          <InfoRow
+            label="Status"
+            value={formattedStatus.replace(/\b\w/g, (char) => char.toUpperCase())}
+          />
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               Roles
             </Typography>
             <Stack direction="row" spacing={1} flexWrap="wrap">
-              {roles.length ? (
-                roles.map((role) => (
-                  <Chip key={role} label={role} size="small" color="primary" variant="outlined" />
-                ))
-              ) : (
-                <Chip label="CLIENT" size="small" variant="outlined" />
-              )}
+              {normalizedRoles.map((role) => (
+                <Chip key={role} label={role} size="small" color="primary" variant="outlined" />
+              ))}
             </Stack>
           </Box>
         </Stack>
@@ -151,19 +164,46 @@ function BrandProfileCard({ fullName, companyName, position, phoneNumber }: Bran
   );
 }
 
-function SecurityCard({
-  submittingReset,
-  onRequestReset,
-  onLogout,
-}: {
+type SecurityCardProps = {
+  emailVerified: boolean;
+  resendingVerification: boolean;
   submittingReset: boolean;
+  onResendVerification: () => void;
   onRequestReset: () => void;
   onLogout: () => void;
-}) {
+};
+
+function SecurityCard({
+  emailVerified,
+  resendingVerification,
+  submittingReset,
+  onResendVerification,
+  onRequestReset,
+  onLogout,
+}: SecurityCardProps) {
   return (
     <Card variant="outlined">
       <CardHeader title="Security" sx={{ pb: 0 }} />
       <CardContent>
+        {!emailVerified && (
+          <Alert
+            severity="warning"
+            sx={{ mb: 3 }}
+            action={
+              <Button
+                color="warning"
+                size="small"
+                onClick={onResendVerification}
+                disabled={resendingVerification}
+              >
+                {resendingVerification ? "Sending..." : "Resend email"}
+              </Button>
+            }
+          >
+            Your email address is not verified. Please confirm it to avoid losing access to your account.
+          </Alert>
+        )}
+
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={2}
@@ -177,13 +217,8 @@ function SecurityCard({
               Send yourself a password reset email to securely update your credentials.
             </Typography>
           </Box>
-          <Button
-            variant="contained"
-            color="primary"
-            disabled={submittingReset}
-            onClick={onRequestReset}
-          >
-            {submittingReset ? "Sending…" : "Send Reset Email"}
+          <Button variant="contained" color="primary" disabled={submittingReset} onClick={onRequestReset}>
+            {submittingReset ? "Sending..." : "Send reset email"}
           </Button>
         </Stack>
 
@@ -217,7 +252,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <Typography variant="body2" color="text.secondary">
         {label}
       </Typography>
-      <Typography variant="subtitle2">{value}</Typography>
+      <Typography variant="subtitle2">{value || FALLBACK_VALUE}</Typography>
     </Box>
   );
 }
