@@ -5,6 +5,7 @@ import {
   RegisterRequest,
   RefreshRequest,
   RegistrationPendingResponse,
+  AuthSessionInfo,
 } from "../models/AuthModel";
 import { OnboardingRequest, OnboardingResponse, ReferenceDataCollections } from "../models/OnboardingModel";
 
@@ -21,14 +22,24 @@ export async function registerUser(
 }
 
 export async function refreshTokens(
-  payload: RefreshRequest
+  payload?: RefreshRequest
 ): Promise<AuthResponse> {
-  const response = await httpClient.post<AuthResponse>("/auth/refresh", payload);
+  const response = await httpClient.post<AuthResponse>("/auth/refresh", payload ?? {});
   return response.data;
 }
 
-export async function logoutUser(refreshToken: string): Promise<void> {
-  await httpClient.post("/auth/logout", { refreshToken });
+export async function logoutUser(refreshToken?: string): Promise<void> {
+  const body = typeof refreshToken === "string" && refreshToken.trim().length > 0 ? { refreshToken } : {};
+  await httpClient.post("/auth/logout", body);
+}
+
+export async function fetchSessions(): Promise<AuthSessionInfo[]> {
+  const response = await httpClient.get<AuthSessionInfo[]>("/auth/sessions");
+  return response.data;
+}
+
+export async function revokeSession(deviceId: string): Promise<void> {
+  await httpClient.delete(`/auth/sessions/${encodeURIComponent(deviceId)}`);
 }
 
 export async function requestPasswordReset(email: string): Promise<void> {

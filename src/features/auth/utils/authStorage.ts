@@ -1,7 +1,5 @@
 import { AuthResponse, AuthTokens, AuthUser } from "../models/AuthModel";
 
-const STORAGE_KEY = "pb.auth.session";
-
 export interface StoredSession {
   tokens: AuthTokens;
   user: AuthUser | null;
@@ -10,34 +8,10 @@ export interface StoredSession {
 type SessionListener = (session: StoredSession | null) => void;
 
 const listeners = new Set<SessionListener>();
-
-function isBrowser() {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
-}
+let inMemorySession: StoredSession | null = null;
 
 export function loadSession(): StoredSession | null {
-  if (!isBrowser()) {
-    return null;
-  }
-
-  const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as StoredSession;
-    if (!parsed?.tokens) {
-      return null;
-    }
-    return {
-      tokens: parsed.tokens,
-      user: parsed.user ?? null,
-    };
-  } catch {
-    window.localStorage.removeItem(STORAGE_KEY);
-    return null;
-  }
+  return inMemorySession;
 }
 
 export function persistSession(auth: AuthResponse): void {
@@ -45,33 +19,24 @@ export function persistSession(auth: AuthResponse): void {
 }
 
 export function persistTokens(tokens: AuthTokens, user: AuthUser | null): void {
-  if (!isBrowser()) {
-    return;
-  }
-
-  const payload: StoredSession = {
+  inMemorySession = {
     tokens,
     user,
   };
-
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  notifyListeners(payload);
+  notifyListeners(inMemorySession);
 }
 
 export function clearSessionStorage(): void {
-  if (!isBrowser()) {
-    return;
-  }
-  window.localStorage.removeItem(STORAGE_KEY);
+  inMemorySession = null;
   notifyListeners(null);
 }
 
 export function getStoredTokens(): AuthTokens | null {
-  return loadSession()?.tokens ?? null;
+  return inMemorySession?.tokens ?? null;
 }
 
 export function getStoredUser(): AuthUser | null {
-  return loadSession()?.user ?? null;
+  return inMemorySession?.user ?? null;
 }
 
 function notifyListeners(session: StoredSession | null) {

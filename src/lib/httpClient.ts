@@ -11,19 +11,17 @@ interface RetriableConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
-const httpClient: AxiosInstance = axios.create({
+const axiosConfig = {
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api",
   headers: {
     "Content-Type": "application/json",
   },
-});
+  withCredentials: true,
+} as const;
 
-const refreshClient: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+const httpClient: AxiosInstance = axios.create({ ...axiosConfig });
+
+const refreshClient: AxiosInstance = axios.create({ ...axiosConfig });
 
 let inMemoryTokens = getStoredTokens();
 
@@ -77,16 +75,9 @@ httpClient.interceptors.response.use(
 );
 
 async function refreshAuthTokens(): Promise<AuthResponse | null> {
-  const tokens = inMemoryTokens ?? getStoredTokens();
-  if (!tokens?.refreshToken) {
-    return null;
-  }
-
   if (!refreshPromise) {
     refreshPromise = refreshClient
-      .post<AuthResponse>("/auth/refresh", {
-        refreshToken: tokens.refreshToken,
-      })
+      .post<AuthResponse>("/auth/refresh", {})
       .then((response) => {
         const auth = response.data;
         inMemoryTokens = auth.tokens;

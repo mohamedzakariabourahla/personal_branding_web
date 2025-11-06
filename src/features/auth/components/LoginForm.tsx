@@ -33,7 +33,7 @@ export default function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await handleLogin(form);
+    await handleLogin({ ...form, deviceName: typeof navigator !== "undefined" ? navigator.userAgent : undefined });
   };
 
   const showResendPrompt = errorCode === "USER_EMAIL_NOT_VERIFIED";

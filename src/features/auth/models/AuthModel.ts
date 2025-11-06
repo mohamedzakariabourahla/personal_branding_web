@@ -42,7 +42,10 @@ export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
   refreshTokenExpiresAt: string;
+  refreshTokenIssuedAt: string;
   tokenType: string;
+  deviceId?: string;
+  deviceName?: string;
 }
 
 export interface AuthResponse {
@@ -53,6 +56,7 @@ export interface AuthResponse {
 export interface LoginRequest {
   email: string;
   password: string;
+  deviceName?: string;
 }
 
 export type LoginResponse = AuthResponse;
@@ -72,7 +76,17 @@ export interface RegistrationPendingResponse {
 export type RegisterResponse = RegistrationPendingResponse;
 
 export interface RefreshRequest {
-  refreshToken: string;
+  refreshToken?: string;
 }
 
 export type RefreshResponse = AuthResponse;
+
+export interface AuthSessionInfo {
+  deviceId: string;
+  deviceName: string | null;
+  userAgent: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+  lastUsedAt: string;
+  expiresAt: string;
+}

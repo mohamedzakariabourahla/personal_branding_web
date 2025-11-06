@@ -29,8 +29,9 @@ test.describe("Auth smoke", () => {
     await performLogin(page, process.env.E2E_TEST_EMAIL as string, process.env.E2E_TEST_PASSWORD as string);
     await waitForPostLoginNavigation(page);
 
-    const storedSession = await page.evaluate(() => window.localStorage.getItem("pb.auth.session"));
-    expect(storedSession).not.toBeNull();
+    const cookies = await page.context().cookies();
+    const refreshCookie = cookies.find((cookie) => cookie.name === "pb_refresh");
+    expect(refreshCookie?.value).toBeTruthy();
   });
 
   test("login API responds with refresh token metadata", async ({ request }) => {

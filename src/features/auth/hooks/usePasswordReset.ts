@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { submitPasswordReset } from "@/features/auth/api/authApi";
+import { resolveAuthError } from "@/features/auth/utils/errorHandling";
 
 type ResetState = {
   submitting: boolean;
@@ -26,10 +27,7 @@ export function usePasswordReset(initialToken?: string) {
         await submitPasswordReset(token.trim(), newPassword);
         setState({ submitting: false, success: true, error: null });
       } catch (err) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : "Unable to reset password right now. Please try again.";
+        const { message } = resolveAuthError(err, "password-reset");
         setState({ submitting: false, success: false, error: message });
       }
     },

@@ -2,7 +2,7 @@
 
 import { AxiosError } from "axios";
 
-export type AuthErrorContext = "login" | "register" | "verify-email" | "verification-resend";
+export type AuthErrorContext = "login" | "register" | "verify-email" | "verification-resend" | "password-reset";
 
 export type ParsedApiError = {
   code: string | null;
@@ -23,6 +23,7 @@ const FALLBACK_MESSAGES: Record<AuthErrorContext, string> = {
   register: "Unable to complete registration right now. Please try again.",
   "verify-email": "Unable to verify your email address right now.",
   "verification-resend": "Unable to send verification email right now. Please try again.",
+  "password-reset": "Unable to reset your password right now. Please try again.",
 };
 
 function coerceRetryAfterSeconds(value: unknown): number | null {
@@ -120,6 +121,14 @@ export function resolveAuthError(error: unknown, context: AuthErrorContext): Res
     case "verification-resend": {
       if (parsed.code === "EMAIL_VERIFICATION_RATE_LIMITED" && parsed.retryAfterSeconds !== null) {
         message = `You can request another verification email in ${formatSeconds(parsed.retryAfterSeconds)}.`;
+      }
+      break;
+    }
+    case "password-reset": {
+      if (parsed.code === "PASSWORD_RESET_TOKEN_EXPIRED") {
+        message = "This reset link has expired. Request a new password reset email and try again.";
+      } else if (parsed.code === "PASSWORD_RESET_TOKEN_NOT_FOUND") {
+        message = "This reset link is invalid or has already been used.";
       }
       break;
     }

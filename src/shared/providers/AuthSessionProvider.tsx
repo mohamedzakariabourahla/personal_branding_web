@@ -10,7 +10,7 @@ import {
   persistTokens,
   subscribeToSession,
 } from "@/features/auth/utils/authStorage";
-import { logoutUser } from "@/features/auth/api/authApi";
+import { logoutUser, refreshTokens } from "@/features/auth/api/authApi";
 
 type AuthSessionValue = {
   user: AuthUser | null;
@@ -35,18 +35,45 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!hydrated) {
-      applySession(loadSession());
-      setHydrated(true);
-    }
+    let cancelled = false;
 
-    const unsubscribe = subscribeToSession((session) => {
+    const handleSessionChange = (session: StoredSession | null) => {
+      if (cancelled) {
+        return;
+      }
       applySession(session);
       setHydrated(true);
-    });
+    };
 
-    return unsubscribe;
-  }, [applySession, hydrated]);
+    handleSessionChange(loadSession());
+
+    const unsubscribe = subscribeToSession(handleSessionChange);
+
+    const bootstrap = async () => {
+      if (loadSession()) {
+        setHydrated(true);
+        return;
+      }
+
+      try {
+        const auth = await refreshTokens().catch(() => null);
+        if (!cancelled && auth) {
+          persistSession(auth);
+        }
+      } finally {
+        if (!cancelled) {
+          setHydrated(true);
+        }
+      }
+    };
+
+    void bootstrap();
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [applySession]);
 
   const setSession = useCallback((auth: AuthResponse) => {
     applySession({ user: auth.user, tokens: auth.tokens });
@@ -68,18 +95,15 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
   }, [applySession]);
 
   const logout = useCallback(async () => {
-    const currentTokens = tokens ?? loadSession()?.tokens ?? null;
     try {
-      if (currentTokens?.refreshToken) {
-        await logoutUser(currentTokens.refreshToken);
-      }
+      await logoutUser();
     } catch (error) {
       // We still clear the local session even if the request fails.
       console.warn("Logout request failed", error);
     } finally {
       clearSession();
     }
-  }, [tokens, clearSession]);
+  }, [clearSession]);
 
   const value = useMemo<AuthSessionValue>(
     () => ({
