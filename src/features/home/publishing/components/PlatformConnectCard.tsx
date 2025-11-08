@@ -11,38 +11,80 @@ import {
   Tooltip,
   CircularProgress,
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import {
   PlatformConnection,
   PlatformProviderConfig,
+  PlatformProviderId,
 } from '@/features/home/publishing/models/platformModels';
+import { px } from 'framer-motion';
 
 type Props = {
   config: PlatformProviderConfig;
   connection?: PlatformConnection;
-  onConnect: (providerId: string) => void;
+  onConnect: (providerId: PlatformProviderId) => void;
   onDisconnect?: (connectionId: number) => void;
   isBusy?: boolean;
 };
 
 export default function PlatformConnectCard({ config, connection, onConnect, onDisconnect, isBusy }: Props) {
   const theme = useTheme();
-  const hasConnection = Boolean(connection);
-  const buttonDisabled = config.disabled || (hasConnection && !onDisconnect);
   const accentColor = config.accent || theme.palette.primary.main;
   const accentContrast = theme.palette.getContrastText(accentColor);
   const avatarSize = theme.spacing(5.5);
   const spinnerSize = Number.parseFloat(theme.spacing(2.25));
+  const surface = theme.palette.background.paper;
+  const cardShadow = `0 10px 30px ${alpha(theme.palette.primary.main, 0.08)}`;
+
+  const renderAction = () => {
+    if (config.disabled) {
+      return (
+        <Button variant="outlined" fullWidth disabled>
+          Coming soon
+        </Button>
+      );
+    }
+
+    if (!connection) {
+      return (
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          disabled={isBusy}
+          onClick={() => onConnect(config.id)}
+          startIcon={isBusy ? <CircularProgress size={spinnerSize} color="inherit" /> : null}
+        >
+          {isBusy ? 'Redirecting...' : 'Connect account'}
+        </Button>
+      );
+    }
+
+    return (
+      <Button
+        variant="outlined"
+        color="inherit"
+        fullWidth
+        disabled={isBusy}
+        onClick={() => connection && onDisconnect?.(connection.id)}
+      >
+        Disconnect
+      </Button>
+    );
+  };
 
   return (
     <Card
       variant="outlined"
       sx={{
         height: '100%',
-        borderRadius: theme.shape.borderRadius,
-        borderColor: 'divider',
+        borderRadius: 0,
+        borderColor: theme.palette.divider,
+        boxShadow: cardShadow,
+        backgroundColor: surface,
         display: 'flex',
         flexDirection: 'column',
+        px: theme.spacing(1.5)
       }}
     >
       <CardContent
@@ -50,7 +92,7 @@ export default function PlatformConnectCard({ config, connection, onConnect, onD
           flexGrow: 1,
           display: 'flex',
           flexDirection: 'column',
-          gap: theme.spacing(2),
+          gap: theme.spacing(3),
         }}
       >
         <Stack direction="row" alignItems="center" spacing={1.5}>
@@ -58,7 +100,7 @@ export default function PlatformConnectCard({ config, connection, onConnect, onD
             sx={{
               width: avatarSize,
               height: avatarSize,
-              borderRadius: theme.shape.borderRadius * 1.5,
+              borderRadius: 0,
               backgroundColor: accentColor,
               display: 'flex',
               alignItems: 'center',
@@ -70,7 +112,8 @@ export default function PlatformConnectCard({ config, connection, onConnect, onD
           >
             {config.name.charAt(0)}
           </Box>
-          <Box>
+
+          <Box sx={{ flexGrow: 1 }}>
             <Typography variant="h6" fontWeight={700}>
               {config.name}
             </Typography>
@@ -78,6 +121,7 @@ export default function PlatformConnectCard({ config, connection, onConnect, onD
               {config.description}
             </Typography>
           </Box>
+          
           {config.badge && (
             <Chip
               label={config.badge}
@@ -85,25 +129,19 @@ export default function PlatformConnectCard({ config, connection, onConnect, onD
               sx={{
                 ml: 'auto',
                 fontWeight: 600,
-                backgroundColor:
-                  config.badge === 'Available'
-                    ? 'success.light'
-                    : config.badge === 'In Review'
-                      ? 'warning.light'
-                      : 'grey.200',
+                backgroundColor: theme.palette.grey[200],
               }}
             />
           )}
         </Stack>
 
-        {hasConnection && connection && (
+        {connection && (
           <Box
             sx={{
-              backgroundColor: 'background.default',
-              borderRadius: theme.shape.borderRadius,
+              backgroundColor: theme.palette.background.default,
+              borderRadius: 0,
               p: theme.spacing(2),
-              border: '1px solid',
-              borderColor: 'divider',
+              border: `1px solid ${theme.palette.divider}`,
             }}
           >
             <Typography variant="subtitle2" fontWeight={600}>
@@ -126,34 +164,8 @@ export default function PlatformConnectCard({ config, connection, onConnect, onD
               {config.betaNote}
             </Typography>
           )}
-          <Tooltip
-            title={config.disabled ? 'This connector will be enabled once partner review is complete.' : ''}
-            placement="top"
-          >
-            <span>
-              {!hasConnection ? (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  disabled={buttonDisabled || isBusy}
-                  onClick={() => onConnect(config.id)}
-                  startIcon={isBusy ? <CircularProgress size={spinnerSize} color="inherit" /> : null}
-                >
-                  {isBusy ? 'Redirecting...' : 'Connect account'}
-                </Button>
-              ) : (
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  fullWidth
-                  disabled={isBusy}
-                  onClick={() => onDisconnect?.(connection.id)}
-                >
-                  Disconnect
-                </Button>
-              )}
-            </span>
+          <Tooltip title={config.disabled ? 'Platform access unlocks soon.' : ''} placement="top">
+            <span>{renderAction()}</span>
           </Tooltip>
         </Box>
       </CardContent>

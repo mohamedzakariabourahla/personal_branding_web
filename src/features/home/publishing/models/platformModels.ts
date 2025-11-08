@@ -39,7 +39,9 @@ export const PLATFORM_PROVIDERS: PlatformProviderConfig[] = [
     platformKey: 'TikTok',
     description: 'Schedule and publish short-form videos, then sync performance insights.',
     accent: '#ff0050',
-    badge: 'Available',
+    badge: 'Coming Soon',
+    disabled: true,
+    betaNote: 'Connector unlocks after TikTok partnership review.',
   },
   {
     id: 'meta',
@@ -47,7 +49,7 @@ export const PLATFORM_PROVIDERS: PlatformProviderConfig[] = [
     platformKey: 'Instagram',
     description: 'Connect professional accounts to schedule reels and carousels (coming soon).',
     accent: '#e1306c',
-    badge: 'In Review',
+    badge: 'Coming Soon',
     disabled: true,
     betaNote: 'Awaiting Meta business verification',
   },
@@ -59,5 +61,6 @@ export const PLATFORM_PROVIDERS: PlatformProviderConfig[] = [
     accent: '#ff0000',
     badge: 'Coming Soon',
     disabled: true,
+    betaNote: 'Creator Studio API integration ships next.',
   },
 ];

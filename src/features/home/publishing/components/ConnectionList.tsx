@@ -26,7 +26,7 @@ function EmptyState() {
     <Box
       sx={(theme) => ({
         border: `1px dashed ${theme.palette.divider}`,
-        borderRadius: theme.shape.borderRadius,
+        borderRadius: 0,
         p: theme.spacing(3),
         textAlign: 'center',
       })}
@@ -50,7 +50,7 @@ export default function ConnectionList({ connections, onDisconnect, busyId }: Pr
     <List
       sx={(theme) => ({
         border: `1px solid ${theme.palette.divider}`,
-        borderRadius: theme.shape.borderRadius,
+        borderRadius: 0,
         p: 0,
       })}
     >

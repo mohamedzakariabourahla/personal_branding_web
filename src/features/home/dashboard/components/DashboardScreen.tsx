@@ -29,8 +29,8 @@ export default function DashboardScreen() {
   const radius = /*theme.shape.borderRadius*/ 0;
 
   return (
-    <Grid container spacing={{ xs: 2, md: 3 }}>
-      <Grid size={{ xs: 12, md: 8 }}>
+    <Grid container spacing={{ xs: 2, md: 4 }}>
+      <Grid size={{ xs: 12, md: 9 }}>
         <Stack spacing={3}>
           <Box>
             <Typography variant="h4" fontWeight={800}>
@@ -43,7 +43,7 @@ export default function DashboardScreen() {
           </Box>
 
           <Box>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            <Typography variant="subtitle1" fontWeight={800} gutterBottom>
               Statistic
             </Typography>
             <Grid container spacing={{ xs: 1.5, sm: 2 }}>
@@ -108,7 +108,7 @@ export default function DashboardScreen() {
         </Stack>
       </Grid>
 
-      <Grid size={{ xs: 12, md: 4 }}>
+      <Grid size={{ xs: 12, md: 3 }}>
         <Card
           variant="outlined"
           sx={{

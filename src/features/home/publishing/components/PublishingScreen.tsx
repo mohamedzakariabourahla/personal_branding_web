@@ -6,12 +6,10 @@ import {
   Box,
   Chip,
   CircularProgress,
-  Grid,
-  Paper,
   Snackbar,
   Stack,
+  Grid,
   Typography,
-  useTheme,
 } from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PlatformConnectCard from '@/features/home/publishing/components/PlatformConnectCard';
@@ -26,9 +24,12 @@ import {
   fetchPlatformConnections,
   startPlatformOAuth,
 } from '@/features/home/publishing/api/platformApi';
+import { alpha, useTheme } from '@mui/material/styles';
 
 export default function PublishingScreen() {
   const theme = useTheme();
+  const surface = theme.palette.background.paper;
+  const sectionShadow = `0 10px 30px ${alpha(theme.palette.primary.main, 0.08)}`;
   const [connections, setConnections] = useState<PlatformConnection[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [busyProvider, setBusyProvider] = useState<string | null>(null);
@@ -105,7 +106,6 @@ export default function PublishingScreen() {
   return (
     <Stack spacing={4}>
       <Box>
-        <Chip label="Automation" color="primary" variant="outlined" />
         <Typography variant="h4" fontWeight={800} mt={theme.spacing(1)}>
           Manage publishing connectors
         </Typography>
@@ -117,9 +117,9 @@ export default function PublishingScreen() {
 
       {error && <Alert severity="error">{error}</Alert>}
 
-      <Grid container spacing={3}>
+      <Grid container spacing={{ xs: 2, md: 3 }}>
         {PLATFORM_PROVIDERS.map((provider) => (
-          <Grid item xs={12} md={6} key={provider.id}>
+          <Grid size={{ xs: 12, md: 6}} key={provider.id}>
             <PlatformConnectCard
               config={provider}
               connection={connectionByPlatform.get(provider.platformKey.toLowerCase())}
@@ -131,12 +131,13 @@ export default function PublishingScreen() {
         ))}
       </Grid>
 
-      <Paper
-        variant="outlined"
+      <Box
         sx={{
-          borderRadius: theme.shape.borderRadius,
+          borderRadius: 0,
+          border: `1px solid ${theme.palette.divider}`,
           p: theme.spacing(3),
-          boxShadow: theme.shadows[1],
+          boxShadow: sectionShadow,
+          backgroundColor: surface,
         }}
       >
         <Stack spacing={3}>
@@ -157,7 +158,7 @@ export default function PublishingScreen() {
             <ConnectionList connections={connections} onDisconnect={handleDisconnect} busyId={busyConnectionId} />
           )}
         </Stack>
-      </Paper>
+      </Box>
 
       <Snackbar
         open={Boolean(toast)}
