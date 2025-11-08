@@ -31,9 +31,24 @@ export default function LoginForm() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const resolveDeviceName = () => {
+    if (typeof navigator === "undefined") {
+      return undefined;
+    }
+    const ua = navigator.userAgent ?? "";
+    if (!ua) {
+      return undefined;
+    }
+    const MAX_DEVICE_NAME = 120;
+    if (ua.length <= MAX_DEVICE_NAME) {
+      return ua;
+    }
+    return `${ua.slice(0, MAX_DEVICE_NAME - 3)}...`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await handleLogin({ ...form, deviceName: typeof navigator !== "undefined" ? navigator.userAgent : undefined });
+    await handleLogin({ ...form, deviceName: resolveDeviceName() });
   };
 
   const showResendPrompt = errorCode === "USER_EMAIL_NOT_VERIFIED";

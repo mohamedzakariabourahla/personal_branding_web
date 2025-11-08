@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import ThemeProvider from '@/theme/ThemeProvider';
-import Navbar from '@/shared/components/Navbar';
+import NavbarVisibilityGate from '@/shared/components/NavbarVisibilityGate';
 import { AuthSessionProvider } from '@/shared/providers/AuthSessionProvider';
 import '../styles/globals.css';
 
@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeProvider>
           <AuthSessionProvider>
-            <Navbar />
+            <NavbarVisibilityGate />
             {children}
           </AuthSessionProvider>
         </ThemeProvider>
