@@ -1,1 +1,1 @@
-export { RegisterRequest, RegisterResponse } from "./AuthModel";
+export type { RegisterRequest, RegisterResponse } from "./AuthModel";
