@@ -1,1 +1,1 @@
-export { LoginRequest, LoginResponse } from "./AuthModel";
+export type { LoginRequest, LoginResponse } from "./AuthModel";
