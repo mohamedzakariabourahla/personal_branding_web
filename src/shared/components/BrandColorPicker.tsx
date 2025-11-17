@@ -134,7 +134,7 @@ export default function BrandColorPicker({
           slotProps={{
             input: {
               inputMode: "text",
-              maxLength: 6,
+              inputProps: { maxLength: 6 },
               startAdornment: (
                 <InputAdornment position="start" sx={{ color: "text.secondary" }}>
                   #
