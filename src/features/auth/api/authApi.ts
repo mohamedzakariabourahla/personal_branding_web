@@ -28,6 +28,11 @@ export async function refreshTokens(
   return response.data;
 }
 
+export async function fetchCurrentSession(): Promise<AuthResponse> {
+  const response = await httpClient.get<AuthResponse>("/auth/session");
+  return response.data;
+}
+
 export async function logoutUser(refreshToken?: string): Promise<void> {
   const body = typeof refreshToken === "string" && refreshToken.trim().length > 0 ? { refreshToken } : {};
   await httpClient.post("/auth/logout", body);

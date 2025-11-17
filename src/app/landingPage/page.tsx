@@ -11,16 +11,16 @@ export default function LandingPage() {
     <>
       <Head>
         <title>
-          PersonalBrandingAI | Create, Schedule & Grow Your TikTok, Instagram, YouTube & Facebook Brand
+          UpPersona Ai | Create, Schedule & Grow Your TikTok, Instagram, YouTube & Facebook Brand
         </title>
         <meta
           name="description"
-          content="PersonalBrandingAI helps you create, schedule, and publish viral content across TikTok, Instagram, YouTube, and Facebook using powerful AI tools for creators and brands."
+          content="UpPersona Ai helps you create, schedule, and publish viral content across TikTok, Instagram, YouTube, and Facebook using powerful AI tools for creators and brands."
         />
-        <meta property="og:title" content="PersonalBrandingAI" />
+        <meta property="og:title" content="UpPersona Ai" />
         <meta
           property="og:description"
-          content="Create, schedule, and publish posts with AI — from viral ideas to analytics. Grow your TikTok, Instagram, YouTube, and Facebook brand faster with PersonalBrandingAI."
+          content="Create, schedule, and publish posts with AI — from viral ideas to analytics. Grow your TikTok, Instagram, YouTube, and Facebook brand faster with UpPersona Ai."
         />
       </Head>
 

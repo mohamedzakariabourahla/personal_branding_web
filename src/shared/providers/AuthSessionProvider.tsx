@@ -10,7 +10,7 @@ import {
   persistTokens,
   subscribeToSession,
 } from "@/features/auth/utils/authStorage";
-import { logoutUser, refreshTokens } from "@/features/auth/api/authApi";
+import { fetchCurrentSession, logoutUser, refreshTokens } from "@/features/auth/api/authApi";
 
 type AuthSessionValue = {
   user: AuthUser | null;
@@ -56,7 +56,9 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const auth = await refreshTokens().catch(() => null);
+        const auth =
+          (await fetchCurrentSession().catch(() => null)) ??
+          (await refreshTokens().catch(() => null));
         if (!cancelled && auth) {
           persistSession(auth);
         }

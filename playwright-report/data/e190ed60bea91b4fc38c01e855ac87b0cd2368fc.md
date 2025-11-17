@@ -1,0 +1,52 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - banner [ref=e12]:
+    - generic [ref=e14]:
+      - link "PersonalBranding AI" [ref=e15] [cursor=pointer]:
+        - /url: /
+        - heading "PersonalBranding" [level=6] [ref=e16]
+        - paragraph [ref=e17]: AI
+      - generic [ref=e18]:
+        - link "Features" [ref=e19] [cursor=pointer]:
+          - /url: /landingPage#features
+        - link "How it works" [ref=e20] [cursor=pointer]:
+          - /url: /landingPage#how-it-works
+        - link "Testimonials" [ref=e21] [cursor=pointer]:
+          - /url: /landingPage#testimonials
+        - link "Contact" [ref=e22] [cursor=pointer]:
+          - /url: /landingPage#contact
+        - link "Get Started" [ref=e23] [cursor=pointer]:
+          - /url: /register
+        - link "Sign In" [ref=e24] [cursor=pointer]:
+          - /url: /login
+        - button [ref=e25] [cursor=pointer]:
+          - img [ref=e26]
+  - generic [ref=e31]:
+    - heading "Welcome Back" [level=4] [ref=e32]
+    - paragraph [ref=e33]: Log in to continue creating, scheduling, and growing your social media presence.
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - text: Email
+          - generic [ref=e38]: "*"
+        - generic [ref=e39]:
+          - textbox "Email" [ref=e40]: mohamedzakariabourahla10@gmail.com
+          - group:
+            - generic: Email *
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - text: Password
+          - generic [ref=e43]: "*"
+        - generic [ref=e44]:
+          - textbox "Password" [ref=e45]: Medbrh2512.
+          - group:
+            - generic: Password *
+      - button [disabled]:
+        - progressbar:
+          - img
+```

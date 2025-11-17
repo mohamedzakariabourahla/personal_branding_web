@@ -127,7 +127,7 @@ const { user, hydrated, logout } = useAuthSession();
                 letterSpacing: '-0.5px',
               }}
             >
-              PersonalBranding
+              UpPersona
             </Typography>
             <Typography
               sx={{

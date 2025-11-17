@@ -17,17 +17,16 @@ import {
   PlatformProviderConfig,
   PlatformProviderId,
 } from '@/features/home/publishing/models/platformModels';
-import { px } from 'framer-motion';
 
 type Props = {
   config: PlatformProviderConfig;
-  connection?: PlatformConnection;
+  connections?: PlatformConnection[];
   onConnect: (providerId: PlatformProviderId) => void;
   onDisconnect?: (connectionId: number) => void;
   isBusy?: boolean;
 };
 
-export default function PlatformConnectCard({ config, connection, onConnect, onDisconnect, isBusy }: Props) {
+export default function PlatformConnectCard({ config, connections = [], onConnect, onDisconnect, isBusy }: Props) {
   const theme = useTheme();
   const accentColor = config.accent || theme.palette.primary.main;
   const accentContrast = theme.palette.getContrastText(accentColor);
@@ -45,30 +44,16 @@ export default function PlatformConnectCard({ config, connection, onConnect, onD
       );
     }
 
-    if (!connection) {
-      return (
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          disabled={isBusy}
-          onClick={() => onConnect(config.id)}
-          startIcon={isBusy ? <CircularProgress size={spinnerSize} color="inherit" /> : null}
-        >
-          {isBusy ? 'Redirecting...' : 'Connect account'}
-        </Button>
-      );
-    }
-
     return (
       <Button
-        variant="outlined"
-        color="inherit"
+        variant="contained"
+        color="primary"
         fullWidth
         disabled={isBusy}
-        onClick={() => connection && onDisconnect?.(connection.id)}
+        onClick={() => onConnect(config.id)}
+        startIcon={isBusy ? <CircularProgress size={spinnerSize} color="inherit" /> : null}
       >
-        Disconnect
+        {isBusy ? 'Redirecting...' : connections.length > 0 ? 'Connect another account' : 'Connect account'}
       </Button>
     );
   };
@@ -129,33 +114,52 @@ export default function PlatformConnectCard({ config, connection, onConnect, onD
               sx={{
                 ml: 'auto',
                 fontWeight: 600,
-                backgroundColor: theme.palette.grey[200],
               }}
             />
           )}
         </Stack>
 
-        {connection && (
-          <Box
-            sx={{
-              backgroundColor: theme.palette.background.default,
-              borderRadius: 0,
-              p: theme.spacing(2),
-              border: `1px solid ${theme.palette.divider}`,
-            }}
-          >
-            <Typography variant="subtitle2" fontWeight={600}>
-              Connected as
-            </Typography>
-            <Typography variant="body1">
-              {connection.externalDisplayName || connection.externalUsername || connection.externalAccountId}
-            </Typography>
-            {connection.lastSyncedAt && (
-              <Typography variant="caption" color="text.secondary">
-                Last synced {new Date(connection.lastSyncedAt).toLocaleString()}
-              </Typography>
-            )}
-          </Box>
+        {connections.length > 0 && (
+          <Stack spacing={1}>
+            {connections.map((connection) => (
+              <Box
+                key={connection.id}
+                sx={{
+                  backgroundColor: theme.palette.background.default,
+                  borderRadius: 0,
+                  p: theme.spacing(2),
+                  border: `1px solid ${theme.palette.divider}`,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: theme.spacing(2),
+                }}
+              >
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Connected as
+                  </Typography>
+                  <Typography variant="body1">
+                    {connection.externalDisplayName || connection.externalUsername || connection.externalAccountId}
+                  </Typography>
+                  {connection.lastSyncedAt && (
+                    <Typography variant="caption" color="text.secondary">
+                      Last synced {new Date(connection.lastSyncedAt).toLocaleString()}
+                    </Typography>
+                  )}
+                </Box>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  size="small"
+                  disabled={isBusy}
+                  onClick={() => onDisconnect?.(connection.id)}
+                >
+                  Disconnect
+                </Button>
+              </Box>
+            ))}
+          </Stack>
         )}
 
         <Box sx={{ mt: 'auto' }}>

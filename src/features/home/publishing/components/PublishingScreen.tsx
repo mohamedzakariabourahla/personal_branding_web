@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
-  Chip,
   CircularProgress,
   Snackbar,
   Stack,
@@ -95,10 +94,16 @@ export default function PublishingScreen() {
     }
   };
 
-  const connectionByPlatform = useMemo(() => {
-    const map = new Map<string, PlatformConnection>();
+  const connectionsByPlatform = useMemo(() => {
+    const map = new Map<string, PlatformConnection[]>();
     connections.forEach((connection) => {
-      map.set(connection.platformName.toLowerCase(), connection);
+      const key = connection.platformName.toLowerCase();
+      const list = map.get(key);
+      if (list) {
+        list.push(connection);
+      } else {
+        map.set(key, [connection]);
+      }
     });
     return map;
   }, [connections]);
@@ -122,7 +127,7 @@ export default function PublishingScreen() {
           <Grid size={{ xs: 12, md: 6}} key={provider.id}>
             <PlatformConnectCard
               config={provider}
-              connection={connectionByPlatform.get(provider.platformKey.toLowerCase())}
+              connections={connectionsByPlatform.get(provider.platformKey.toLowerCase())}
               onConnect={handleConnect}
               onDisconnect={handleDisconnect}
               isBusy={busyProvider === provider.id}

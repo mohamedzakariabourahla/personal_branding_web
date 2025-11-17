@@ -5,7 +5,7 @@ import { AuthSessionProvider } from '@/shared/providers/AuthSessionProvider';
 import '../styles/globals.css';
 
 export const metadata: Metadata = {
-  title: 'Personal Branding SaaS',
+  title: 'UpPersona Ai',
   description: 'Next.js + MUI + Spring Boot backend',
 };
 

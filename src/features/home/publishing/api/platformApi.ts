@@ -1,5 +1,6 @@
 import httpClient from '@/lib/httpClient';
 import {
+  OAuthCompletionResult,
   PlatformAuthorization,
   PlatformConnection,
   PlatformProviderId,
@@ -17,9 +18,9 @@ export async function startPlatformOAuth(provider: PlatformProviderId): Promise<
 
 export async function completePlatformOAuth(
   provider: PlatformProviderId,
-  payload: { code: string; state: string }
-): Promise<PlatformConnection> {
-  const response = await httpClient.post<PlatformConnection>(`/platforms/${provider}/oauth/complete`, payload);
+  payload: { code: string; state: string; pageId?: string | null }
+): Promise<OAuthCompletionResult> {
+  const response = await httpClient.post<OAuthCompletionResult>(`/platforms/${provider}/oauth/complete`, payload);
   return response.data;
 }
 

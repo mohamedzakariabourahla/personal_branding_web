@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Personal Branding SaaS – Web
 
-## Getting Started
+Next.js 15 + MUI dashboard that surfaces onboarding, publishing connectors, and future analytics slices.
 
-First, run the development server:
+## Run Locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd personal-branding-saas-web
+npm install
+npm run dev            # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app expects the backend at `NEXT_PUBLIC_API_URL` (defaults to `http://localhost:8080/api`) and uses HttpOnly refresh cookies, so run the API on the same host/port family to avoid CORS headaches.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## OAuth Connectors
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Before testing Instagram/TikTok, follow [`../docs/meta-connector-setup.md`](../docs/meta-connector-setup.md). It explains how to configure the Meta Business app, tester roles, redirect URIs, and the linking between Pages + IG accounts that TikTok also relies on when sharing assets.
+2. For YouTube, provision a Google Cloud OAuth client via [`../docs/youtube-connector-setup.md`](../docs/youtube-connector-setup.md) so the `/youtube/callback` redirect and scopes are approved.
+3. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_API_URL` to your deployed backend (see [`../docs/environment.md`](../docs/environment.md)).
+4. Launch a connector from `/publishing`. The SPA calls `/api/platforms/{provider}/oauth/start`, redirects to the provider, and returns to `/meta/callback`, `/tiktok/callback`, or `/youtube/callback`.
+5. The shared `OAuthCallbackHandler` persists selection UIs in `sessionStorage`, maps `OAuthCompletionResult` responses (CONNECTED / SELECTION_REQUIRED / FAILED), and redirects back to `/publishing?connected={provider}` on success.
 
-## Learn More
+## Testing
 
-To learn more about Next.js, take a look at the following resources:
+- `npm run lint` – ESLint/TypeScript checks.
+- `npm run test:e2e` – Playwright suite (requires the backend or mocked API routes; see specs under `tests/e2e`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For a deeper roadmap and architectural context, see `../docs/hardening-plan.md` and `../docs/architecture.md`.

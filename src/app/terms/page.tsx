@@ -6,32 +6,32 @@ const sections = [
   {
     title: '1. Acceptance of terms',
     body:
-      'By creating an account you agree to these terms and our privacy policy. If you represent a business, you confirm you have authority to bind the organization.',
+      'By creating an account you agree to these terms and our privacy policy. If you register on behalf of a company you confirm you are authorized to bind that organization.',
   },
   {
     title: '2. Service description',
     body:
-      'UpPersona provides tools to plan, generate, schedule, and analyze social content. Features may evolve over time; any breaking change will be communicated in advance.',
+      'UpPersona provides AI-assisted workflows to plan ideas, generate scripts, coordinate Google Drive assets, schedule posts, and surface analytics across TikTok, Meta, and YouTube. Features may evolve over time; breaking changes or pricing updates will be announced in advance.',
   },
   {
-    title: '3. Permitted use',
+    title: '3. Platform connectors & responsibilities',
     body:
-      'You may only publish content you own or are authorized to distribute. You are responsible for complying with the terms of each platform you connect.',
+      'You may only connect accounts you control and are responsible for complying with each platform’s policies (TikTok Business Terms, Meta Platform Policies, YouTube Terms of Service). You must have rights to any media you publish and you remain liable for the content.',
   },
   {
-    title: '4. Payment & trials',
+    title: '4. Payment',
     body:
-      'During beta the product is free. Future paid plans will be announced with at least 30 days notice and can be canceled at any time.',
+      'The beta is free. Future paid plans will include at least 30 days notice. Subscriptions, if introduced, renew monthly and can be canceled anytime; fees are non-refundable once the billing period begins.',
   },
   {
-    title: '5. Termination',
+    title: '5. Suspension & termination',
     body:
-      'We may suspend or terminate access if accounts are used for spam, abuse, or violate partner policies. You may delete your account at any time from Settings.',
+      'We may suspend or terminate access for spam, abuse, infringement, or violation of partner policies. You may delete your workspace from Settings, which revokes social tokens and removes queued posts.',
   },
   {
     title: '6. Liability',
     body:
-      'The service is provided “as is”. We are not liable for indirect or consequential damages. Our aggregate liability is limited to the fees you have paid in the last 12 months.',
+      'The service is provided "as is" without warranties of any kind. UpPersona is not liable for indirect, incidental, or consequential damages. Our aggregate liability is limited to the fees paid in the previous 12 months.',
   },
 ];
 
@@ -58,7 +58,7 @@ export default function TermsPage() {
       ))}
 
       <Typography variant="body2" color="text.secondary">
-        Questions? Email legal@uppersona.app
+        Questions? Email mohamedzakariabourahla@gmail.com
       </Typography>
     </Container>
   );

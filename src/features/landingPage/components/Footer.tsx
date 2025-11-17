@@ -13,7 +13,7 @@ export default function Footer() {
           spacing={2}
         >
           <Typography variant="body2" color="text.secondary">
-            © {new Date().getFullYear()} PersonalBrandingAI. All rights reserved.
+            © {new Date().getFullYear()} UpPersona Ai. All rights reserved.
           </Typography>
 
           <Stack direction="row" spacing={3}>

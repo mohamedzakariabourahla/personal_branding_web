@@ -13,7 +13,7 @@ export default function HeroSection() {
 
         <Typography variant="h6" color="text.secondary" maxWidth="sm">
           Generate viral ideas, captions, and posts — then schedule and publish them automatically.
-          PersonalBrandingAI is your all-in-one tool to grow your social presence faster.
+          UpPersona Ai is your all-in-one tool to grow your social presence faster.
         </Typography>
 
         <Stack direction="row" spacing={2}>
