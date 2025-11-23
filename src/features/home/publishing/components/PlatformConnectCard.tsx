@@ -63,13 +63,14 @@ export default function PlatformConnectCard({ config, connections = [], onConnec
       variant="outlined"
       sx={{
         height: '100%',
-        borderRadius: 0,
+        borderRadius: theme.spacing(0),
         borderColor: theme.palette.divider,
         boxShadow: cardShadow,
         backgroundColor: surface,
         display: 'flex',
         flexDirection: 'column',
-        px: theme.spacing(1.5)
+        px: { xs: theme.spacing(2), sm: theme.spacing(3) },
+        py: theme.spacing(2),
       }}
     >
       <CardContent
@@ -85,7 +86,7 @@ export default function PlatformConnectCard({ config, connections = [], onConnec
             sx={{
               width: avatarSize,
               height: avatarSize,
-              borderRadius: 0,
+              borderRadius: theme.spacing(1),
               backgroundColor: accentColor,
               display: 'flex',
               alignItems: 'center',
@@ -120,13 +121,13 @@ export default function PlatformConnectCard({ config, connections = [], onConnec
         </Stack>
 
         {connections.length > 0 && (
-          <Stack spacing={1}>
+          <Stack spacing={1.25}>
             {connections.map((connection) => (
               <Box
                 key={connection.id}
                 sx={{
                   backgroundColor: theme.palette.background.default,
-                  borderRadius: 0,
+                  borderRadius: theme.spacing(1.5),
                   p: theme.spacing(2),
                   border: `1px solid ${theme.palette.divider}`,
                   display: 'flex',

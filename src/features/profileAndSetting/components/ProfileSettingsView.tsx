@@ -17,13 +17,21 @@ import {
 } from "@mui/material";
 import PageContainer from "@/shared/components/layouts/PageContainer";
 import { useProfileSettings } from "../hooks/useProfileSettings";
+import { AuthTokens, PersonProfile } from "@/features/auth/models/AuthModel";
 
 const FALLBACK_VALUE = "N/A";
+
+const formatStatus = (value: string) =>
+  value
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 
 export function ProfileSettingsView() {
   const router = useRouter();
   const {
     user,
+    tokens,
     onboardingStatus,
     roles,
     person,
@@ -45,13 +53,13 @@ export function ProfileSettingsView() {
 
   return (
     <PageContainer>
-      <Stack spacing={4} sx={{ maxWidth: 960, mx: "auto", width: "100%" }}>
+      <Stack spacing={4} sx={{ maxWidth: 1100, mx: "auto", width: "100%" }}>
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Profile & Settings
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Manage your personal details, security preferences, and account access.
+            Manage your account, brand details, and security so scheduling stays reliable across devices.
           </Typography>
         </Box>
 
@@ -59,21 +67,24 @@ export function ProfileSettingsView() {
           <Grid size={{ xs: 12, md: 4 }}>
             <AccountOverviewCard
               email={user?.email ?? FALLBACK_VALUE}
+              userId={user?.id ?? null}
               onboardingStatus={onboardingStatus}
               roles={roles}
               emailVerified={emailVerified}
+              active={user?.active ?? false}
             />
           </Grid>
 
           <Grid size={{ xs: 12, md: 4 }}>
-            <BrandProfileCard
-              fullName={person?.fullName ?? FALLBACK_VALUE}
-              companyName={person?.companyName ?? FALLBACK_VALUE}
-              position={person?.position ?? FALLBACK_VALUE}
-              phoneNumber={person?.phoneNumber ?? FALLBACK_VALUE}
-            />
+            <BrandProfileCard person={person} />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 4 }}>
+            <ContentPreferencesCard person={person} />
           </Grid>
         </Grid>
+
+        <SessionDetailsCard tokens={tokens} />
 
         <SecurityCard
           emailVerified={emailVerified}
@@ -107,26 +118,26 @@ export function ProfileSettingsView() {
 
 type AccountOverviewProps = {
   email: string;
+  userId: number | null;
   onboardingStatus: string;
   roles: string[];
   emailVerified: boolean;
+  active: boolean;
 };
 
-function AccountOverviewCard({ email, onboardingStatus, roles, emailVerified }: AccountOverviewProps) {
-  const formattedStatus = onboardingStatus.replace(/_/g, " ").toLowerCase();
+function AccountOverviewCard({ email, userId, onboardingStatus, roles, emailVerified, active }: AccountOverviewProps) {
   const normalizedRoles = roles.length ? roles : ["CLIENT"];
 
   return (
     <Card variant="outlined">
       <CardHeader title="Account Overview" sx={{ pb: 0 }} />
       <CardContent>
-        <Stack spacing={1.5}>
+        <Stack spacing={1.25}>
           <InfoRow label="Email" value={email} />
+          <InfoRow label="Account ID" value={userId ? String(userId) : FALLBACK_VALUE} />
+          <InfoRow label="Status" value={formatStatus(onboardingStatus)} />
           <InfoRow label="Email verification" value={emailVerified ? "Verified" : "Pending verification"} />
-          <InfoRow
-            label="Status"
-            value={formattedStatus.replace(/\b\w/g, (char) => char.toUpperCase())}
-          />
+          <InfoRow label="Account activity" value={active ? "Active" : "Disabled"} />
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
               Roles
@@ -143,23 +154,79 @@ function AccountOverviewCard({ email, onboardingStatus, roles, emailVerified }: 
   );
 }
 
-type BrandProfileProps = {
-  fullName: string;
-  companyName: string;
-  position: string;
-  phoneNumber: string;
-};
-
-function BrandProfileCard({ fullName, companyName, position, phoneNumber }: BrandProfileProps) {
+function BrandProfileCard({ person }: { person: PersonProfile | null }) {
   return (
     <Card variant="outlined">
       <CardHeader title="Brand Profile" sx={{ pb: 0 }} />
       <CardContent>
+        <Stack spacing={1.25}>
+          <InfoRow label="Full name" value={person?.fullName ?? FALLBACK_VALUE} />
+          <InfoRow label="Company" value={person?.companyName ?? FALLBACK_VALUE} />
+          <InfoRow label="Position" value={person?.position ?? FALLBACK_VALUE} />
+          <InfoRow label="Phone" value={person?.phoneNumber ?? FALLBACK_VALUE} />
+          <InfoRow label="Primary color" value={person?.brandColor ?? FALLBACK_VALUE} />
+          <InfoRow label="Font style" value={person?.fontStyle ?? FALLBACK_VALUE} />
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ContentPreferencesCard({ person }: { person: PersonProfile | null }) {
+  const sections: { label: string; values: string[] }[] = [
+    { label: "Niches", values: person?.niches?.map((item) => item.name) ?? [] },
+    { label: "Audiences", values: person?.audiences?.map((item) => item.name) ?? [] },
+    { label: "Tones", values: person?.tones?.map((item) => item.name) ?? [] },
+    { label: "Platforms", values: person?.platforms?.map((item) => item.name) ?? [] },
+    { label: "Countries", values: person?.countries?.map((item) => item.name) ?? [] },
+    { label: "Posting frequency", values: person?.postingFrequencies?.map((item) => item.name) ?? [] },
+  ];
+
+  return (
+    <Card variant="outlined">
+      <CardHeader title="Content Preferences" sx={{ pb: 0 }} />
+      <CardContent>
         <Stack spacing={1.5}>
-          <InfoRow label="Full name" value={fullName} />
-          <InfoRow label="Company" value={companyName} />
-          <InfoRow label="Position" value={position} />
-          <InfoRow label="Phone" value={phoneNumber} />
+          {sections.map((section) => (
+            <Box key={section.label}>
+              <Typography variant="body2" color="text.secondary">
+                {section.label}
+              </Typography>
+              {section.values.length ? (
+                <Stack direction="row" spacing={1} flexWrap="wrap" mt={0.5}>
+                  {section.values.map((value) => (
+                    <Chip key={value} label={value} size="small" />
+                  ))}
+                </Stack>
+              ) : (
+                <Typography variant="subtitle2">{FALLBACK_VALUE}</Typography>
+              )}
+            </Box>
+          ))}
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SessionDetailsCard({ tokens }: { tokens: AuthTokens | null }) {
+  const rows = [
+    { label: "Device ID", value: tokens?.deviceId ?? FALLBACK_VALUE },
+    { label: "Device name", value: tokens?.deviceName ?? FALLBACK_VALUE },
+    { label: "Token type", value: tokens?.tokenType ?? FALLBACK_VALUE },
+  ];
+
+  return (
+    <Card variant="outlined">
+      <CardHeader title="Session & Device" sx={{ pb: 0 }} />
+      <CardContent>
+        <Stack spacing={1.25}>
+          {rows.map((row) => (
+            <InfoRow key={row.label} label={row.label} value={row.value} />
+          ))}
+          <Typography variant="body2" color="text.secondary">
+            Keep this device trusted and sign out remotely if you suspect unauthorized access.
+          </Typography>
         </Stack>
       </CardContent>
     </Card>

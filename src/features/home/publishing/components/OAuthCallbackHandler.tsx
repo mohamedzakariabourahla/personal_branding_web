@@ -90,11 +90,6 @@ export default function OAuthCallbackHandler({ provider, successRedirect = '/pub
   const redirectToSuccess = useCallback(() => {
     const targetUrl = `${successRedirect}?connected=${provider}`;
     router.replace(targetUrl);
-    setTimeout(() => {
-      if (mountedRef.current) {
-        window.location.href = targetUrl;
-      }
-    }, 200);
   }, [provider, router, successRedirect]);
 
   const handleResult = useCallback(

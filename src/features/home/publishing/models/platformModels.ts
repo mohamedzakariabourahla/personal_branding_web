@@ -1,5 +1,7 @@
 export type PlatformProviderId = 'tiktok' | 'meta' | 'youtube';
 
+export type PlatformStatus = 'available' | 'beta' | 'planned' | 'coming_soon';
+
 export interface PlatformConnection {
   id: number;
   userId: number;
@@ -51,6 +53,18 @@ export interface PlatformProviderConfig {
   docsLink?: string;
 }
 
+export interface SupportedPlatform {
+  name: string;
+  code: string;
+  description: string;
+  providerId?: PlatformProviderId;
+  status: PlatformStatus;
+  accent?: string;
+  badge?: PlatformProviderConfig['badge'];
+  docsLink?: string;
+  disabled?: boolean;
+}
+
 export const PLATFORM_PROVIDERS: PlatformProviderConfig[] = [
   {
     id: 'tiktok',
@@ -81,5 +95,49 @@ export const PLATFORM_PROVIDERS: PlatformProviderConfig[] = [
     badge: 'Beta',
     disabled: false,
     betaNote: 'Connect your primary channel while we finish analytics + publishing.',
+  },
+];
+
+export const SUPPORTED_PLATFORMS: SupportedPlatform[] = [
+  {
+    name: 'Twitter/X',
+    code: 'twitter',
+    description: 'Short updates, thread publishing, and replies. API access planned.',
+    status: 'coming_soon',
+  },
+  {
+    name: 'Instagram',
+    code: 'instagram',
+    description: 'Schedule reels and carousels via Meta OAuth.',
+    providerId: 'meta',
+    status: 'beta',
+    badge: 'Beta',
+  },
+  {
+    name: 'YouTube',
+    code: 'youtube',
+    description: 'Long-form uploads, Shorts, and thumbnails.',
+    status: 'coming_soon',
+    badge: 'Coming Soon',
+  },
+  {
+    name: 'TikTok',
+    code: 'tiktok',
+    description: 'Short-form publishing with sandbox/live environments.',
+    status: 'coming_soon',
+    badge: 'Coming Soon',
+  },
+  {
+    name: 'Facebook',
+    code: 'facebook',
+    description: 'Pages and Groups scheduling through Meta.',
+    status: 'coming_soon',
+    badge: 'Coming Soon',
+  },
+  {
+    name: 'Threads',
+    code: 'threads',
+    description: 'Threads posting once the API is opened.',
+    status: 'coming_soon',
   },
 ];

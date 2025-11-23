@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import dayjs from "dayjs";
 import {
   Alert,
   Box,
   Button,
+  Chip,
   FormControl,
   InputLabel,
   MenuItem,
@@ -18,27 +20,66 @@ import { uploadAsset } from "@/features/home/publishing/api/assetApi";
 interface Props {
   connections: PlatformConnection[];
   onCreated?: () => void;
+  serverTime?: string | null;
+  accountTimezone?: string;
+  selectedConnectionId?: number | null;
 }
 
-export default function PublishingJobForm({ connections, onCreated }: Props) {
+export default function PublishingJobForm({
+  connections,
+  onCreated,
+  serverTime,
+  accountTimezone,
+  selectedConnectionId,
+}: Props) {
   const [connectionId, setConnectionId] = useState<number | "">("");
   const [caption, setCaption] = useState("");
-  const [scheduledAt, setScheduledAt] = useState<string>("");
   const [mediaAssetIds, setMediaAssetIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState<string>("");
+  const maxCaptionLength = 2200;
 
   const availableConnections = useMemo(
     () => [...connections].sort((a, b) => (a.platformName || "").localeCompare(b.platformName || "")),
     [connections]
   );
 
+  useEffect(() => {
+    if (selectedConnectionId) {
+      setConnectionId(selectedConnectionId);
+    }
+  }, [selectedConnectionId]);
+
+  const selectedConnection = useMemo(
+    () => connections.find((c) => c.id === connectionId) ?? null,
+    [connectionId, connections]
+  );
+
+  const localTimezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
+  const serverTimeValue = useMemo(() => (serverTime ? dayjs(serverTime) : null), [serverTime]);
+  const localTimeValue = useMemo(() => dayjs(), []);
+  const clockSkewMinutes = useMemo(() => {
+    if (!serverTimeValue) return null;
+    return Math.round(serverTimeValue.diff(localTimeValue, "minute"));
+  }, [localTimeValue, serverTimeValue]);
+
+  const minSchedule = useMemo(() => dayjs().add(5, "minute").format("YYYY-MM-DDTHH:mm"), []);
+
+  const applyQuickSchedule = (dt: dayjs.Dayjs) => {
+    setScheduledDate(dt.format("YYYY-MM-DDTHH:mm"));
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!connectionId) {
       setError("Select a connection to schedule a post.");
+      return;
+    }
+    if (!scheduledDate) {
+      setError("Pick a scheduled date.");
       return;
     }
     setLoading(true);
@@ -59,11 +100,11 @@ export default function PublishingJobForm({ connections, onCreated }: Props) {
         connectionId: conn.id,
         caption: caption.trim() || undefined,
         mediaAssetIds,
-        scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : null,
+        scheduledAt: new Date(scheduledDate).toISOString(),
       });
       setSuccess("Post scheduled.");
       setCaption("");
-      setScheduledAt("");
+      setScheduledDate("");
       setMediaAssetIds([]);
       if (onCreated) {
         onCreated();
@@ -83,39 +124,52 @@ export default function PublishingJobForm({ connections, onCreated }: Props) {
         </Typography>
         {error && <Alert severity="error">{error}</Alert>}
         {success && <Alert severity="success">{success}</Alert>}
-        <FormControl fullWidth size="small">
-          <InputLabel id="connection-select-label">Connection</InputLabel>
-          <Select
-            labelId="connection-select-label"
-            label="Connection"
-            value={connectionId}
-            onChange={(e) => setConnectionId(Number(e.target.value))}
-            required
-          >
-            {availableConnections.map((conn) => (
-              <MenuItem key={conn.id} value={conn.id}>
-                {conn.platformName} – {conn.externalDisplayName || conn.externalUsername || conn.externalAccountId}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <TextField
-          label="Caption"
-          size="small"
-          fullWidth
-          multiline
-          minRows={2}
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-        />
+        {!selectedConnection && (
+          <FormControl fullWidth size="small">
+            <InputLabel id="connection-select-label">Connection</InputLabel>
+            <Select
+              labelId="connection-select-label"
+              label="Connection"
+              value={connectionId}
+              onChange={(e) => setConnectionId(Number(e.target.value))}
+              required
+            >
+              {availableConnections.map((conn) => (
+                <MenuItem key={conn.id} value={conn.id}>
+                  {conn.platformName} - {conn.externalDisplayName || conn.externalUsername || conn.externalAccountId}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
         <Stack spacing={1}>
-          <Typography variant="body2">Media assets</Typography>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Button variant="outlined" component="label" disabled={uploading}>
+          <Typography variant="body2" fontWeight={600}>Caption</Typography>
+          <TextField
+            label="Write a caption. Add CTAs, tags, and credits."
+            size="small"
+            fullWidth
+            multiline
+            minRows={2}
+            placeholder="Write a caption. Add CTAs, tags, and credits."
+            helperText={`${caption.length}/${maxCaptionLength}`}
+            inputProps={{ maxLength: maxCaptionLength }}
+            value={caption}
+            onChange={(e) => setCaption(e.target.value.slice(0, maxCaptionLength))}
+          />
+        </Stack>
+        <Stack spacing={1}>
+          <Typography variant="body2" fontWeight={600}>Media assets</Typography>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ xs: "stretch", sm: "center" }}>
+            <Button
+              variant="outlined"
+              component="label"
+              disabled={uploading}
+              sx={{ minWidth: 180, minHeight: 40, textTransform: "none" }}
+            >
               {uploading ? "Uploading..." : "Upload file"}
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 hidden
                 onChange={async (e) => {
                   if (!e.target.files || e.target.files.length === 0) {
@@ -143,6 +197,17 @@ export default function PublishingJobForm({ connections, onCreated }: Props) {
               label="Or paste a URL"
               size="small"
               fullWidth
+              placeholder="https://..."
+              InputProps={{
+                sx: {
+                  minHeight: 40,
+                  "& .MuiInputBase-input": {
+                    height: "100%",
+                    boxSizing: "border-box",
+                    py: 0,
+                  },
+                },
+              }}
               onBlur={(e) => {
                 const url = e.target.value.trim();
                 if (url) {
@@ -154,27 +219,57 @@ export default function PublishingJobForm({ connections, onCreated }: Props) {
           </Stack>
           <Stack direction="row" spacing={1} flexWrap="wrap">
             {mediaAssetIds.map((url) => (
-              <Button
+              <Chip
                 key={url}
+                label={url.length > 32 ? `${url.slice(0, 32)}...` : url}
+                onDelete={() => setMediaAssetIds((prev) => prev.filter((u) => u !== url))}
                 size="small"
                 variant="outlined"
                 color="secondary"
-                onClick={() => setMediaAssetIds((prev) => prev.filter((u) => u !== url))}
-              >
-                Remove
-              </Button>
+              />
             ))}
           </Stack>
         </Stack>
-        <TextField
-          label="Scheduled time"
-          size="small"
-          fullWidth
-          type="datetime-local"
-          InputLabelProps={{ shrink: true }}
-          value={scheduledAt}
-          onChange={(e) => setScheduledAt(e.target.value)}
-        />
+        <Stack spacing={0.5}>
+          <Stack spacing={1}>
+            <Typography variant="body2" fontWeight={600}>Scheduled date & time</Typography>
+            <TextField
+              size="small"
+              fullWidth
+              type="datetime-local"
+              InputLabelProps={{ shrink: true }}
+              value={scheduledDate}
+              onChange={(e) => setScheduledDate(e.target.value)}
+              inputProps={{
+                min: minSchedule,
+                step: 300,
+              }}
+            />
+          </Stack>
+          <Stack direction="row" spacing={1} flexWrap="wrap">
+            <Button size="small" variant="outlined" onClick={() => applyQuickSchedule(dayjs().add(5, "minute"))}>
+              In 5 minutes
+            </Button>
+            <Button size="small" variant="outlined" onClick={() => applyQuickSchedule(dayjs().add(1, "hour"))}>
+              In 1 hour
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => applyQuickSchedule(dayjs().add(1, "day").startOf("day"))}
+            >
+              Midnight
+            </Button>
+            <Button size="small" variant="outlined" onClick={() => applyQuickSchedule(dayjs().add(1, "day"))}>
+              In 1 day
+            </Button>
+          </Stack>
+          <Typography variant="caption" color="text.secondary">
+            Server time: {serverTimeValue ? serverTimeValue.format("YYYY-MM-DD HH:mm") : "Not available"} - Your timezone:{" "}
+            {accountTimezone || localTimezone}
+            {clockSkewMinutes !== null && ` (offset ${clockSkewMinutes} min)`}
+          </Typography>
+        </Stack>
         <Button type="submit" variant="contained" disabled={loading}>
           {loading ? "Scheduling..." : "Schedule post"}
         </Button>

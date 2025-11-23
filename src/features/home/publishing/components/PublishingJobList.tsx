@@ -26,9 +26,10 @@ type Props = {
   refreshKey?: number;
   connections?: PlatformConnection[];
   onChanged?: () => void;
+  connectionFilter?: number | null;
 };
 
-export default function PublishingJobList({ refreshKey, connections, onChanged }: Props) {
+export default function PublishingJobList({ refreshKey, connections, onChanged, connectionFilter }: Props) {
   const [jobs, setJobs] = useState<PublishingJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,12 +70,16 @@ export default function PublishingJobList({ refreshKey, connections, onChanged }
   }, [refreshKey]);
 
   const hasJobs = useMemo(() => jobs.length > 0, [jobs]);
+  const filteredJobs = useMemo(
+    () => (connectionFilter ? jobs.filter((job) => job.connectionId === connectionFilter) : jobs),
+    [connectionFilter, jobs]
+  );
 
   if (loading) {
     return (
       <Stack direction="row" alignItems="center" spacing={1}>
         <CircularProgress size={20} />
-        <Typography variant="body2">Loading scheduled posts…</Typography>
+        <Typography variant="body2">Loading scheduled posts...</Typography>
       </Stack>
     );
   }
@@ -158,7 +163,7 @@ export default function PublishingJobList({ refreshKey, connections, onChanged }
 
   return (
     <Stack spacing={1.5}>
-      {jobs.map((job) => (
+      {filteredJobs.map((job) => (
         <Box
           key={job.id}
           sx={{
@@ -174,7 +179,7 @@ export default function PublishingJobList({ refreshKey, connections, onChanged }
                 Post #{job.id}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {connectionLookup.get(job.connectionId)?.platformName ?? "Platform"} –{" "}
+                {connectionLookup.get(job.connectionId)?.platformName ?? "Platform"} —{" "}
                 {connectionLookup.get(job.connectionId)?.externalDisplayName ||
                   connectionLookup.get(job.connectionId)?.externalUsername ||
                   `Connection ${job.connectionId}`}

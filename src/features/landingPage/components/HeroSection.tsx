@@ -12,7 +12,7 @@ export default function HeroSection() {
         </Typography>
 
         <Typography variant="h6" color="text.secondary" maxWidth="sm">
-          Generate viral ideas, captions, and posts — then schedule and publish them automatically.
+          Generate viral ideas, captions, and posts—then schedule and publish them automatically.
           UpPersona Ai is your all-in-one tool to grow your social presence faster.
         </Typography>
 

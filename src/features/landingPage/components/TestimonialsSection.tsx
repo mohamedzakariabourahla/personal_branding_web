@@ -42,7 +42,7 @@ export default function TestimonialsSection() {
                     sx={{ width: 56, height: 56 }}
                   />
                   <Typography variant="body1" color="text.primary">
-                    “{t.text}”
+                    {t.text}
                   </Typography>
                   <Typography variant="subtitle1" fontWeight={600}>
                     {t.name}

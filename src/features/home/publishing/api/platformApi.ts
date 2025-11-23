@@ -8,9 +8,18 @@ import {
 import { PublishingJob } from '@/features/home/publishing/models/publishingJobModels';
 import { PublishingAttempt } from '@/features/home/publishing/models/publishingAttemptModels';
 
-export async function fetchPlatformConnections(): Promise<PlatformConnection[]> {
+export type PlatformConnectionsResponse = {
+  connections: PlatformConnection[];
+  serverTime?: string;
+};
+
+export async function fetchPlatformConnections(): Promise<PlatformConnectionsResponse> {
   const response = await httpClient.get<PlatformConnection[]>('/platforms/connections');
-  return response.data;
+  const serverTimeHeader = response.headers?.date;
+  return {
+    connections: response.data,
+    serverTime: serverTimeHeader ? new Date(serverTimeHeader).toISOString() : undefined,
+  };
 }
 
 export async function startPlatformOAuth(provider: PlatformProviderId): Promise<PlatformAuthorization> {

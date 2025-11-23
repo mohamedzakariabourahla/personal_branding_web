@@ -1,16 +1,26 @@
-'use client';
-
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Box, CircularProgress, Snackbar, Stack, Grid, Typography } from '@mui/material';
+import {
+  Alert,
+  Autocomplete,
+  Box,
+  Chip,
+  CircularProgress,
+  Snackbar,
+  Stack,
+  Grid,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PlatformConnectCard from '@/features/home/publishing/components/PlatformConnectCard';
 import ConnectionList from '@/features/home/publishing/components/ConnectionList';
-import PublishingJobList from '@/features/home/publishing/components/PublishingJobList';
-import PublishingJobForm from '@/features/home/publishing/components/PublishingJobForm';
+import { PublishingHeader } from '@/features/home/publishing/components/PublishingHeader';
 import {
+  SUPPORTED_PLATFORMS,
   PLATFORM_PROVIDERS,
   PlatformConnection,
   PlatformProviderId,
+  SupportedPlatform,
 } from '@/features/home/publishing/models/platformModels';
 import {
   deletePlatformConnection,
@@ -29,16 +39,41 @@ export default function PublishingScreen() {
   const [busyConnectionId, setBusyConnectionId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [jobsRefreshKey, setJobsRefreshKey] = useState(0);
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const providerById = useMemo(
+    () => new Map(PLATFORM_PROVIDERS.map((provider) => [provider.id, provider])),
+    []
+  );
+
+  const platformCatalog = useMemo(() => {
+    return SUPPORTED_PLATFORMS.map((platform) => {
+      const provider = platform.providerId ? providerById.get(platform.providerId) : null;
+      return {
+        ...platform,
+        accent: platform.accent ?? provider?.accent ?? theme.palette.primary.main,
+        badge: platform.badge ?? provider?.badge,
+        disabled: platform.status === 'coming_soon' || platform.status === 'planned',
+      };
+    });
+  }, [providerById, theme.palette.primary.main]);
+
+  const connectablePlatforms = useMemo(
+    () => platformCatalog.filter((platform) => Boolean(platform.providerId) && !platform.disabled),
+    [platformCatalog]
+  );
+
+  const [selectedPlatformCode, setSelectedPlatformCode] = useState<string | null>(
+    connectablePlatforms[0]?.code ?? null
+  );
 
   const loadConnections = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchPlatformConnections();
-      setConnections(data);
+      const result = await fetchPlatformConnections();
+      setConnections(result.connections);
     } catch (err) {
       console.error(err);
       setError('Unable to load connections. Please try again.');
@@ -57,7 +92,7 @@ export default function PublishingScreen() {
       setToast(`Successfully connected ${connected.charAt(0).toUpperCase()}${connected.slice(1)}.`);
       const params = new URLSearchParams(searchParams.toString());
       params.delete('connected');
-      router.replace(`/publishing${params.toString() ? `?${params}` : ''}`);
+      router.replace(`/publishing/accounts${params.toString() ? `?${params}` : ''}`);
     }
   }, [router, searchParams]);
 
@@ -81,7 +116,6 @@ export default function PublishingScreen() {
       await deletePlatformConnection(connectionId);
       await loadConnections();
       setToast('Connection removed.');
-      setJobsRefreshKey((k) => k + 1);
     } catch (err) {
       console.error(err);
       setError('Unable to remove the connection. Please try again.');
@@ -104,33 +138,95 @@ export default function PublishingScreen() {
     return map;
   }, [connections]);
 
+  const selectedPlatform: SupportedPlatform | null = useMemo(
+    () => platformCatalog.find((platform) => platform.code === selectedPlatformCode) ?? null,
+    [platformCatalog, selectedPlatformCode]
+  );
+
+  const selectedProviderConfig = useMemo(() => {
+    if (!selectedPlatform?.providerId) return null;
+    const provider = providerById.get(selectedPlatform.providerId);
+    if (!provider) return null;
+    return {
+      ...provider,
+      name: selectedPlatform.name,
+      description: selectedPlatform.description,
+      badge: selectedPlatform.badge ?? provider.badge,
+      accent: selectedPlatform.accent ?? provider.accent,
+      disabled: selectedPlatform.disabled,
+    };
+  }, [providerById, selectedPlatform]);
+
   return (
     <Stack spacing={{ xs: 2, md: 4 }}>
-      <Box>
-        <Typography variant="h4" fontWeight={800} mt={theme.spacing(1)}>
-          Manage publishing connectors
-        </Typography>
-        <Typography color="text.secondary" maxWidth={theme.spacing(75)}>
-          Connect your social accounts once to handle scheduling, approvals, and analytics from a single dashboard.
-          Every token is encrypted and you can revoke access at any time.
-        </Typography>
-      </Box>
+      <Stack spacing={2}>
+        <PublishingHeader active="accounts" />
+        <Box>
+          <Typography variant="h4" fontWeight={800} mt={theme.spacing(1)}>
+            Manage publishing connectors
+          </Typography>
+          <Typography color="text.secondary" maxWidth={theme.spacing(75)}>
+            Connect Instagram (beta). Additional platforms are coming soon—add them now to stay informed.
+          </Typography>
+        </Box>
+      </Stack>
 
       {error && <Alert severity="error">{error}</Alert>}
 
-      <Grid container spacing={{ xs: 2, md: 3 }}>
-        {PLATFORM_PROVIDERS.map((provider) => (
-          <Grid size={{ xs: 12, md: 6}} key={provider.id}>
-            <PlatformConnectCard
-              config={provider}
-              connections={connectionsByPlatform.get(provider.platformKey.toLowerCase())}
-              onConnect={handleConnect}
-              onDisconnect={handleDisconnect}
-              isBusy={busyProvider === provider.id}
-            />
+      <Stack spacing={2}>
+        <Typography variant="h6" fontWeight={700}>
+          Add or connect a platform
+        </Typography>
+        <Autocomplete
+          options={platformCatalog}
+          getOptionLabel={(option) => option.name}
+          value={selectedPlatform}
+          onChange={(_, next) => setSelectedPlatformCode(next?.code ?? null)}
+          isOptionEqualToValue={(option, value) => option.code === value.code}
+          renderInput={(params) => <TextField {...params} label="Choose a platform" size="small" />}
+          renderOption={(props, option) => (
+            <li {...props} key={option.code}>
+              <Stack direction="column" spacing={0.5} sx={{ width: '100%' }}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Chip
+                    size="small"
+                    label={option.name}
+                    sx={{
+                      backgroundColor: option.accent ?? theme.palette.action.selected,
+                      color: theme.palette.getContrastText(option.accent ?? theme.palette.primary.main),
+                    }}
+                  />
+                  {option.badge && <Chip size="small" label={option.badge} variant="outlined" />}
+                  {option.disabled && (
+                    <Chip size="small" label="Coming soon" variant="outlined" color="default" />
+                  )}
+                </Stack>
+                <Typography variant="body2" color="text.secondary">
+                  {option.description}
+                </Typography>
+              </Stack>
+            </li>
+          )}
+        />
+
+        {selectedProviderConfig ? (
+          <Grid container spacing={{ xs: 2, md: 3 }}>
+            <Grid size={{ xs: 12 }}>
+              <PlatformConnectCard
+                config={selectedProviderConfig}
+                connections={connectionsByPlatform.get(selectedProviderConfig.platformKey.toLowerCase())}
+                onConnect={handleConnect}
+                onDisconnect={handleDisconnect}
+                isBusy={busyProvider === selectedProviderConfig.id}
+              />
+            </Grid>
           </Grid>
-        ))}
-      </Grid>
+        ) : (
+          <Alert severity="info">
+            This platform integration is planned. We&apos;ll notify you when it&apos;s ready to connect.
+          </Alert>
+        )}
+      </Stack>
 
       <Box
         sx={{
@@ -158,39 +254,6 @@ export default function PublishingScreen() {
           ) : (
             <ConnectionList connections={connections} onDisconnect={handleDisconnect} busyId={busyConnectionId} />
           )}
-        </Stack>
-      </Box>
-
-      <Box
-        sx={{
-          borderRadius: 0,
-          border: `1px solid ${theme.palette.divider}`,
-          p: theme.spacing(3),
-          boxShadow: sectionShadow,
-          backgroundColor: surface,
-        }}
-      >
-        <Stack spacing={3}>
-          <PublishingJobForm
-            connections={connections}
-            onCreated={() => {
-              void loadConnections();
-              setJobsRefreshKey((k) => k + 1);
-            }}
-          />
-          <Box>
-            <Typography variant="h6" fontWeight={700}>
-              Publishing jobs
-            </Typography>
-            <Typography color="text.secondary">
-              Recently scheduled posts with status, attempts, and any failure reasons.
-            </Typography>
-          </Box>
-          <PublishingJobList
-            refreshKey={jobsRefreshKey}
-            connections={connections}
-            onChanged={() => setJobsRefreshKey((k) => k + 1)}
-          />
         </Stack>
       </Box>
 

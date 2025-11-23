@@ -188,6 +188,18 @@ export default function WorkspaceLayout({ children }: Props) {
               <Typography variant="h6" fontWeight={600}>
                 Creator Workspace
               </Typography>
+              <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: theme.spacing(1.5) }}>
+                <ThemeToggle />
+                <IconButton onClick={() => router.push(SETTINGS_LINK.href)} aria-label="Profile and settings">
+                  <Avatar
+                    src="/assets/avatar-default.svg"
+                    alt={displayName}
+                    sx={{ width: avatarSize, height: avatarSize, boxShadow: theme.shadows[3] }}
+                  >
+                    {initials}
+                  </Avatar>
+                </IconButton>
+              </Box>
             </Toolbar>
           </AppBar>
         )}
@@ -201,43 +213,45 @@ export default function WorkspaceLayout({ children }: Props) {
             width: '100%',
           }}
         >
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center',
-              mb: theme.spacing(3),
-              gap: theme.spacing(3),
-            }}
-          >
-            <ButtonBase
-              disableRipple
-              onClick={() => router.push(SETTINGS_LINK.href)}
+          {!isMobile && !isTablet && (
+            <Box
               sx={{
-                backgroundColor: 'transparent',
-                px: 0,
-                py: 0,
-                boxShadow: 'none',
                 display: 'flex',
+                justifyContent: 'flex-end',
                 alignItems: 'center',
-                gap: theme.spacing(1),
-                textAlign: 'left',
+                mb: theme.spacing(3),
+                gap: theme.spacing(3),
               }}
             >
-              <Avatar
-                src="/assets/avatar-default.svg"
-                alt={displayName}
-                sx={{ width: avatarSize, height: avatarSize, boxShadow: theme.shadows[3] }}
+              <ButtonBase
+                disableRipple
+                onClick={() => router.push(SETTINGS_LINK.href)}
+                sx={{
+                  backgroundColor: 'transparent',
+                  px: 0,
+                  py: 0,
+                  boxShadow: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: theme.spacing(1),
+                  textAlign: 'left',
+                }}
               >
-                {initials}
-              </Avatar>
-              <Typography fontWeight={600} color="text.primary">
-                {displayName}
-              </Typography>
-            </ButtonBase>
+                <Avatar
+                  src="/assets/avatar-default.svg"
+                  alt={displayName}
+                  sx={{ width: avatarSize, height: avatarSize, boxShadow: theme.shadows[3] }}
+                >
+                  {initials}
+                </Avatar>
+                <Typography fontWeight={600} color="text.primary">
+                  {displayName}
+                </Typography>
+              </ButtonBase>
 
-            <ThemeToggle />
-          </Box>
+              <ThemeToggle />
+            </Box>
+          )}
           {children}
         </Box>
       </Box>
