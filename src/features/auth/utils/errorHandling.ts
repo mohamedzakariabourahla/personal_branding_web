@@ -105,6 +105,8 @@ export function resolveAuthError(error: unknown, context: AuthErrorContext): Res
           parsed.retryAfterSeconds !== null
             ? `You requested a verification email recently. Please wait ${formatSeconds(parsed.retryAfterSeconds)} before trying again.`
             : "You requested a verification email recently. Please wait before trying again.";
+      } else if (parsed.code === "EMAIL_DISPATCH_FAILED") {
+        message = "We couldn't send the verification email. Check your address or try again in a moment.";
       } else if (parsed.code === "INVALID_CREDENTIALS" || parsed.code === "USER_EMAIL_NOT_VERIFIED") {
         message = fallback;
       }

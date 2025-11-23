@@ -1,12 +1,5 @@
 import httpClient from "@/lib/httpClient";
-import {
-  AuthResponse,
-  LoginRequest,
-  RegisterRequest,
-  RefreshRequest,
-  RegistrationPendingResponse,
-  AuthSessionInfo,
-} from "../models/AuthModel";
+import { AuthResponse, LoginRequest, RegisterRequest, RegistrationPendingResponse, AuthSessionInfo } from "../models/AuthModel";
 import { OnboardingRequest, OnboardingResponse, ReferenceDataCollections } from "../models/OnboardingModel";
 
 export async function loginUser(payload: LoginRequest): Promise<AuthResponse> {
@@ -21,10 +14,8 @@ export async function registerUser(
   return response.data;
 }
 
-export async function refreshTokens(
-  payload?: RefreshRequest
-): Promise<AuthResponse> {
-  const response = await httpClient.post<AuthResponse>("/auth/refresh", payload ?? {});
+export async function refreshTokens(): Promise<AuthResponse> {
+  const response = await httpClient.post<AuthResponse>("/auth/refresh");
   return response.data;
 }
 
@@ -33,9 +24,8 @@ export async function fetchCurrentSession(): Promise<AuthResponse> {
   return response.data;
 }
 
-export async function logoutUser(refreshToken?: string): Promise<void> {
-  const body = typeof refreshToken === "string" && refreshToken.trim().length > 0 ? { refreshToken } : {};
-  await httpClient.post("/auth/logout", body);
+export async function logoutUser(): Promise<void> {
+  await httpClient.post("/auth/logout");
 }
 
 export async function fetchSessions(): Promise<AuthSessionInfo[]> {

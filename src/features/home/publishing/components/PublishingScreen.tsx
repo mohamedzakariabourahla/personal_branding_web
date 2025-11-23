@@ -1,18 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Alert,
-  Box,
-  CircularProgress,
-  Snackbar,
-  Stack,
-  Grid,
-  Typography,
-} from '@mui/material';
+import { Alert, Box, CircularProgress, Snackbar, Stack, Grid, Typography } from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
 import PlatformConnectCard from '@/features/home/publishing/components/PlatformConnectCard';
 import ConnectionList from '@/features/home/publishing/components/ConnectionList';
+import PublishingJobList from '@/features/home/publishing/components/PublishingJobList';
+import PublishingJobForm from '@/features/home/publishing/components/PublishingJobForm';
 import {
   PLATFORM_PROVIDERS,
   PlatformConnection,
@@ -35,6 +29,7 @@ export default function PublishingScreen() {
   const [busyConnectionId, setBusyConnectionId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [jobsRefreshKey, setJobsRefreshKey] = useState(0);
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -86,6 +81,7 @@ export default function PublishingScreen() {
       await deletePlatformConnection(connectionId);
       await loadConnections();
       setToast('Connection removed.');
+      setJobsRefreshKey((k) => k + 1);
     } catch (err) {
       console.error(err);
       setError('Unable to remove the connection. Please try again.');
@@ -109,7 +105,7 @@ export default function PublishingScreen() {
   }, [connections]);
 
   return (
-    <Stack spacing={4}>
+    <Stack spacing={{ xs: 2, md: 4 }}>
       <Box>
         <Typography variant="h4" fontWeight={800} mt={theme.spacing(1)}>
           Manage publishing connectors
@@ -162,6 +158,39 @@ export default function PublishingScreen() {
           ) : (
             <ConnectionList connections={connections} onDisconnect={handleDisconnect} busyId={busyConnectionId} />
           )}
+        </Stack>
+      </Box>
+
+      <Box
+        sx={{
+          borderRadius: 0,
+          border: `1px solid ${theme.palette.divider}`,
+          p: theme.spacing(3),
+          boxShadow: sectionShadow,
+          backgroundColor: surface,
+        }}
+      >
+        <Stack spacing={3}>
+          <PublishingJobForm
+            connections={connections}
+            onCreated={() => {
+              void loadConnections();
+              setJobsRefreshKey((k) => k + 1);
+            }}
+          />
+          <Box>
+            <Typography variant="h6" fontWeight={700}>
+              Publishing jobs
+            </Typography>
+            <Typography color="text.secondary">
+              Recently scheduled posts with status, attempts, and any failure reasons.
+            </Typography>
+          </Box>
+          <PublishingJobList
+            refreshKey={jobsRefreshKey}
+            connections={connections}
+            onChanged={() => setJobsRefreshKey((k) => k + 1)}
+          />
         </Stack>
       </Box>
 

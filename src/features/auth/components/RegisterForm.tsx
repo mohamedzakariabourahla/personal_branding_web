@@ -20,6 +20,8 @@ export default function RegisterForm() {
     successMessage,
     verificationExpiresAt,
     registeredEmail,
+    emailDispatchFailed,
+    dispatchError,
     handleRegister,
   } = useRegister();
   const [form, setForm] = useState<RegisterFormState>({
@@ -107,19 +109,21 @@ export default function RegisterForm() {
           required
         />
 
-        {(validationError || error) && (
-          <Alert severity="error">{validationError ?? error}</Alert>
-        )}
+        {(validationError || error) && <Alert severity="error">{validationError ?? error}</Alert>}
         {success && successMessage && (
-          <Alert severity="success">
+          <Alert severity={emailDispatchFailed ? "warning" : "success"}>
             <Stack spacing={1}>
-              <Typography variant="body2">{successMessage}</Typography>
-              {verificationCopy && <Typography variant="body2">{verificationCopy}</Typography>}
+              <Typography variant="body2">
+                {emailDispatchFailed && dispatchError ? dispatchError : successMessage}
+              </Typography>
+              {verificationCopy && !emailDispatchFailed && <Typography variant="body2">{verificationCopy}</Typography>}
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography variant="body2" color="text.secondary">
-                  Didn&apos;t get it? We&apos;ll send another email and token.
+                  {emailDispatchFailed
+                    ? "Email delivery failed. Use a verified sender or try again."
+                    : "Didn't get it? We'll send another email and token."}
                 </Typography>
-                
+
                 <Button
                   color="inherit"
                   size="small"
@@ -133,9 +137,7 @@ export default function RegisterForm() {
                     ? `Resend (${cooldown}s)`
                     : "Resend verification"}
                 </Button>
-                
               </Stack>
-
             </Stack>
           </Alert>
         )}

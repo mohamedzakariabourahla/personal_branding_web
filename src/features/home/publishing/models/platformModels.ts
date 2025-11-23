@@ -3,6 +3,8 @@ export type PlatformProviderId = 'tiktok' | 'meta' | 'youtube';
 export interface PlatformConnection {
   id: number;
   userId: number;
+  platformId?: number;
+  platformCode?: string | null;
   platformName: string;
   externalAccountId: string;
   externalUsername: string | null;

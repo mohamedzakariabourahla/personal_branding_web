@@ -13,6 +13,8 @@ export function useRegister() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [verificationExpiresAt, setVerificationExpiresAt] = useState<string | null>(null);
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
+  const [emailDispatchFailed, setEmailDispatchFailed] = useState(false);
+  const [dispatchError, setDispatchError] = useState<string | null>(null);
 
   const handleRegister = async (form: RegisterRequest) => {
     setLoading(true);
@@ -21,6 +23,8 @@ export function useRegister() {
     setSuccessMessage(null);
     setVerificationExpiresAt(null);
     setRegisteredEmail(null);
+    setEmailDispatchFailed(false);
+    setDispatchError(null);
 
     try {
       const response: RegistrationPendingResponse = await registerUser(form);
@@ -34,6 +38,10 @@ export function useRegister() {
     } catch (err: unknown) {
       const { message } = resolveAuthError(err, "register");
       setError(message);
+      if (message && message.toLowerCase().includes("couldn't send")) {
+        setEmailDispatchFailed(true);
+        setDispatchError(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -46,6 +54,8 @@ export function useRegister() {
     successMessage,
     verificationExpiresAt,
     registeredEmail,
+    emailDispatchFailed,
+    dispatchError,
     handleRegister,
   };
 }

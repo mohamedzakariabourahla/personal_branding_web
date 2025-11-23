@@ -39,13 +39,10 @@ export interface AuthUser {
 }
 
 export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-  refreshTokenExpiresAt: string;
-  refreshTokenIssuedAt: string;
-  tokenType: string;
-  deviceId?: string;
-  deviceName?: string;
+    accessToken: string;
+    tokenType: string;
+    deviceId?: string;
+    deviceName?: string;
 }
 
 export interface AuthResponse {
@@ -74,10 +71,6 @@ export interface RegistrationPendingResponse {
 }
 
 export type RegisterResponse = RegistrationPendingResponse;
-
-export interface RefreshRequest {
-  refreshToken?: string;
-}
 
 export type RefreshResponse = AuthResponse;
 

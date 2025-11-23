@@ -42,16 +42,18 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
         return;
       }
       applySession(session);
-      setHydrated(true);
     };
 
-    handleSessionChange(loadSession());
+    const existingSession = loadSession();
+    if (existingSession) {
+      handleSessionChange(existingSession);
+      setHydrated(true);
+    }
 
     const unsubscribe = subscribeToSession(handleSessionChange);
 
     const bootstrap = async () => {
-      if (loadSession()) {
-        setHydrated(true);
+      if (existingSession) {
         return;
       }
 

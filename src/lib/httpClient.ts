@@ -77,7 +77,7 @@ httpClient.interceptors.response.use(
 async function refreshAuthTokens(): Promise<AuthResponse | null> {
   if (!refreshPromise) {
     refreshPromise = refreshClient
-      .post<AuthResponse>("/auth/refresh", {})
+      .post<AuthResponse>("/auth/refresh")
       .then((response) => {
         const auth = response.data;
         inMemoryTokens = auth.tokens;
