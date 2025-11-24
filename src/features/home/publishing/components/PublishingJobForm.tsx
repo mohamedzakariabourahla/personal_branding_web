@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 import {
   Alert,
@@ -6,6 +6,8 @@ import {
   Button,
   Chip,
   FormControl,
+  IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
@@ -16,6 +18,7 @@ import {
 import { PlatformConnection } from "@/features/home/publishing/models/platformModels";
 import { schedulePublishingJob } from "@/features/home/publishing/api/platformApi";
 import { uploadAsset } from "@/features/home/publishing/api/assetApi";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 interface Props {
   connections: PlatformConnection[];
@@ -41,6 +44,7 @@ export default function PublishingJobForm({
   const [uploading, setUploading] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<string>("");
   const maxCaptionLength = 2200;
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
 
   const availableConnections = useMemo(
     () => [...connections].sort((a, b) => (a.platformName || "").localeCompare(b.platformName || "")),
@@ -66,7 +70,7 @@ export default function PublishingJobForm({
     return Math.round(serverTimeValue.diff(localTimeValue, "minute"));
   }, [localTimeValue, serverTimeValue]);
 
-  const minSchedule = useMemo(() => dayjs().add(5, "minute").format("YYYY-MM-DDTHH:mm"), []);
+  const minSchedule = dayjs().add(1, "minute").format("YYYY-MM-DDTHH:mm");
 
   const applyQuickSchedule = (dt: dayjs.Dayjs) => {
     setScheduledDate(dt.format("YYYY-MM-DDTHH:mm"));
@@ -74,8 +78,17 @@ export default function PublishingJobForm({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const trimmedCaption = caption.trim();
     if (!connectionId) {
       setError("Select a connection to schedule a post.");
+      return;
+    }
+    if (!trimmedCaption) {
+      setError("Caption is required.");
+      return;
+    }
+    if (mediaAssetIds.length === 0) {
+      setError("Add at least one media asset or URL.");
       return;
     }
     if (!scheduledDate) {
@@ -98,7 +111,7 @@ export default function PublishingJobForm({
       await schedulePublishingJob({
         platformId: conn.platformId,
         connectionId: conn.id,
-        caption: caption.trim() || undefined,
+        caption: trimmedCaption,
         mediaAssetIds,
         scheduledAt: new Date(scheduledDate).toISOString(),
       });
@@ -240,13 +253,53 @@ export default function PublishingJobForm({
               InputLabelProps={{ shrink: true }}
               value={scheduledDate}
               onChange={(e) => setScheduledDate(e.target.value)}
+              inputRef={dateInputRef}
               inputProps={{
                 min: minSchedule,
                 step: 300,
+                style: { cursor: "pointer" },
+              }}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="Open date time picker"
+                      edge="end"
+                      size="small"
+                      color="primary"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const picker = dateInputRef.current as unknown as { showPicker?: () => void } | null;
+                        if (picker?.showPicker) {
+                          picker.showPicker();
+                        } else {
+                          dateInputRef.current?.focus();
+                        }
+                      }}
+                    >
+                      <CalendarMonthIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+                sx: {
+                  "& input::-webkit-calendar-picker-indicator": {
+                    opacity: 0,
+                    display: "block",
+                    width: "100%",
+                    height: "100%",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    cursor: "pointer",
+                  },
+                },
               }}
             />
           </Stack>
           <Stack direction="row" spacing={1} flexWrap="wrap">
+            <Button size="small" variant="outlined" onClick={() => applyQuickSchedule(dayjs().add(1, "minute"))}>
+              In 1 minute
+            </Button>
             <Button size="small" variant="outlined" onClick={() => applyQuickSchedule(dayjs().add(5, "minute"))}>
               In 5 minutes
             </Button>

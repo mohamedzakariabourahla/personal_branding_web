@@ -16,7 +16,7 @@ export function PublishingHeader({ active }: { active: PublishingSection }) {
   ];
 
   return (
-    <Stack direction="row" spacing={1} flexWrap="wrap">
+    <Stack direction="row" spacing={1.5} flexWrap="wrap">
       {tabs.map((tab) => {
         const selected = current === tab.key;
         return (

@@ -145,7 +145,6 @@ export default function PublishingScheduleScreen() {
           ) : (
             <PublishingJobList
               refreshKey={jobsRefreshKey}
-              connections={connections}
               connectionFilter={selectedConnectionId}
               onChanged={() => setJobsRefreshKey((k) => k + 1)}
             />

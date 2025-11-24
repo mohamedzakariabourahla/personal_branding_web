@@ -29,7 +29,7 @@ import {
 } from '@/features/home/publishing/api/platformApi';
 import { alpha, useTheme } from '@mui/material/styles';
 
-export default function PublishingScreen() {
+export default function PublishingAccountsScreen() {
   const theme = useTheme();
   const surface = theme.palette.background.paper;
   const sectionShadow = `0 10px 30px ${alpha(theme.palette.primary.main, 0.08)}`;

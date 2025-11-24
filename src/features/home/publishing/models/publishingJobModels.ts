@@ -13,5 +13,6 @@ export interface PublishingJob {
   attemptCount: number;
   status: PublishingJobStatus;
   failureReason: string | null;
+  failureUserMessage?: string | null;
   externalPostId?: string | null;
 }

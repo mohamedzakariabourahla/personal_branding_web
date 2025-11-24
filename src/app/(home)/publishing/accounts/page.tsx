@@ -1,7 +1,7 @@
 "use client";
 
-import PublishingScreen from "@/features/home/publishing/components/PublishingScreen";
+import PublishingAccountsScreen from "@/features/home/publishing/components/PublishingAccountsScreen";
 
 export default function PublishingAccountsPage() {
-  return <PublishingScreen />;
+  return <PublishingAccountsScreen />;
 }
