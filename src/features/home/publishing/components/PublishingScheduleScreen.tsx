@@ -1,48 +1,22 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Box, CircularProgress, Snackbar, Stack, Typography, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { PublishingHeader } from '@/features/home/publishing/components/PublishingHeader';
 import PublishingJobForm from '@/features/home/publishing/components/PublishingJobForm';
 import PublishingJobList from '@/features/home/publishing/components/PublishingJobList';
-import { fetchPlatformConnections } from '@/features/home/publishing/api/platformApi';
-import { PlatformConnection } from '@/features/home/publishing/models/platformModels';
+import { usePlatformConnections } from '@/features/home/publishing/hooks/usePlatformConnections';
 
 export default function PublishingScheduleScreen() {
   const theme = useTheme();
   const surface = theme.palette.background.paper;
   const sectionShadow = `0 10px 30px ${alpha(theme.palette.primary.main, 0.08)}`;
 
-  const [connections, setConnections] = useState<PlatformConnection[]>([]);
-  const [serverTime, setServerTime] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const { connections, serverTime, loading, error, reload: reloadConnections } = usePlatformConnections();
   const [toast, setToast] = useState<string | null>(null);
   const [jobsRefreshKey, setJobsRefreshKey] = useState(0);
   const [selectedConnectionId, setSelectedConnectionId] = useState<number | null>(null);
 
   const accountTimezone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
-
-  const loadConnections = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await fetchPlatformConnections();
-      setConnections(result.connections);
-      setServerTime(result.serverTime ?? null);
-      if (!selectedConnectionId && result.connections.length > 0) {
-        setSelectedConnectionId(result.connections[0].id);
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Unable to load connections. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedConnectionId]);
-
-  useEffect(() => {
-    void loadConnections();
-  }, [loadConnections]);
 
   useEffect(() => {
     if (!connections.length) {
@@ -98,7 +72,7 @@ export default function PublishingScheduleScreen() {
               >
                 {connections.map((conn) => (
                   <MenuItem key={conn.id} value={conn.id}>
-                    {conn.platformName} — {conn.externalDisplayName || conn.externalUsername || conn.externalAccountId}
+                    {conn.platformName} - {conn.externalDisplayName || conn.externalUsername || conn.externalAccountId}
                   </MenuItem>
                 ))}
               </Select>
@@ -109,7 +83,7 @@ export default function PublishingScheduleScreen() {
               accountTimezone={accountTimezone}
               selectedConnectionId={selectedConnectionId ?? null}
               onCreated={() => {
-                void loadConnections();
+                void reloadConnections();
                 setJobsRefreshKey((k) => k + 1);
                 setToast('Post scheduled');
               }}

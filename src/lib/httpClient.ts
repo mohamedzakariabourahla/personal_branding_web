@@ -12,7 +12,7 @@ interface RetriableConfig extends InternalAxiosRequestConfig {
 }
 
 const axiosConfig = {
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api",
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "https://localhost:8443/api",
   headers: {
     "Content-Type": "application/json",
   },

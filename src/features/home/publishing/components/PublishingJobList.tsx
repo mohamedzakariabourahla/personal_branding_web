@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Alert, Box, Button, Chip, CircularProgress, Collapse, Divider, Link, Stack, Typography } from "@mui/material";
-import { cancelPublishingJob, fetchPublishingAttempts, fetchPublishingJobs, retryPublishingJob } from "@/features/home/publishing/api/platformApi";
-import { PublishingJob } from "@/features/home/publishing/models/publishingJobModels";
-import { PublishingAttempt } from "@/features/home/publishing/models/publishingAttemptModels";
 import dayjs from "dayjs";
+import { usePublishingJobs } from "@/features/home/publishing/hooks/usePublishingJobs";
 
 const statusColor: Record<string, "default" | "success" | "error" | "warning" | "info"> = {
   SCHEDULED: "info",
@@ -38,45 +36,24 @@ type Props = {
 };
 
 export default function PublishingJobList({ refreshKey, onChanged, connectionFilter }: Props) {
-  const [jobs, setJobs] = useState<PublishingJob[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [attempts, setAttempts] = useState<Record<number, PublishingAttempt[]>>({});
   const [expandedJobId, setExpandedJobId] = useState<number | null>(null);
-  const [retryingId, setRetryingId] = useState<number | null>(null);
-  const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const {
+    jobs,
+    attemptsByJob,
+    loading,
+    error,
+    retryingId,
+    cancellingId,
+    loadAttempts,
+    retryJob,
+    cancelJob,
+    removeJob,
+  } = usePublishingJobs(refreshKey);
 
-  useEffect(() => {
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await fetchPublishingJobs();
-        if (!cancelled) {
-          setJobs(data);
-        }
-      } catch {
-        if (!cancelled) {
-          setError("Unable to load publishing jobs right now.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [refreshKey]);
-
-  const hasJobs = useMemo(() => jobs.length > 0, [jobs]);
-  const filteredJobs = useMemo(
-    () => (connectionFilter ? jobs.filter((job) => job.connectionId === connectionFilter) : jobs),
-    [connectionFilter, jobs]
-  );
+  const filteredJobs = useMemo(() => {
+    return connectionFilter ? jobs.filter((job) => job.connectionId === connectionFilter) : jobs;
+  }, [connectionFilter, jobs]);
+  const hasJobs = filteredJobs.length > 0;
 
   if (loading) {
     return (
@@ -101,64 +78,46 @@ export default function PublishingJobList({ refreshKey, onChanged, connectionFil
       return;
     }
     setExpandedJobId(jobId);
-    if (attempts[jobId]) {
-      return;
-    }
-    try {
-      const data = await fetchPublishingAttempts(jobId);
-      setAttempts((prev) => ({ ...prev, [jobId]: data }));
-    } catch {
-      // ignore
+    if (!attemptsByJob[jobId]) {
+      try {
+        await loadAttempts(jobId);
+      } catch {
+        // ignore failures when fetching attempts
+      }
     }
   };
 
   const handleRetry = async (jobId: number) => {
-    setRetryingId(jobId);
     try {
-      await retryPublishingJob(jobId);
-      const updatedJobs = await fetchPublishingJobs();
-      setJobs(updatedJobs);
+      await retryJob(jobId);
       if (expandedJobId === jobId) {
         try {
-          const atts = await fetchPublishingAttempts(jobId);
-          setAttempts((prev) => ({ ...prev, [jobId]: atts }));
+          await loadAttempts(jobId);
         } catch {
-          // ignore
+          // ignore failures when refreshing attempts
         }
       }
       if (onChanged) {
         onChanged();
       }
     } catch {
-      // ignore
-    } finally {
-      setRetryingId(null);
+      // ignore failures surfaced by retry
     }
   };
 
   const handleCancel = async (jobId: number) => {
-    setCancellingId(jobId);
     try {
-      await cancelPublishingJob(jobId);
-      const data = await fetchPublishingJobs();
-      setJobs(data);
+      await cancelJob(jobId);
       if (onChanged) {
         onChanged();
       }
     } catch {
-      // ignore
-    } finally {
-      setCancellingId(null);
+      // ignore failures surfaced by cancel
     }
   };
 
   const handleRemoveFromHistory = (jobId: number) => {
-    setJobs((prev) => prev.filter((j) => j.id !== jobId));
-    setAttempts((prev) => {
-      const next = { ...prev };
-      delete next[jobId];
-      return next;
-    });
+    removeJob(jobId);
     if (onChanged) {
       onChanged();
     }
@@ -252,15 +211,15 @@ export default function PublishingJobList({ refreshKey, onChanged, connectionFil
             </Stack>
 
             <Stack
-      spacing={0.5}
-      alignItems="flex-end"
-      sx={{
-        flexBasis: { xs: "34%", sm: "34%" },
-        flexShrink: 0,
-        minWidth: 180,
-        maxWidth: 260,
-      }}
-    >
+              spacing={0.5}
+              alignItems="flex-end"
+              sx={{
+                flexBasis: { xs: "34%", sm: "34%" },
+                flexShrink: 0,
+                minWidth: 180,
+                maxWidth: 260,
+              }}
+            >
               <Chip
                 label={statusLabel[job.status] ?? job.status}
                 color={statusColor[job.status] ?? "default"}
@@ -313,7 +272,7 @@ export default function PublishingJobList({ refreshKey, onChanged, connectionFil
           <Collapse in={expandedJobId === job.id} timeout="auto" unmountOnExit>
             <Divider sx={{ my: 1.5 }} />
             <Stack spacing={1}>
-              {(attempts[job.id] ?? []).map((att) => {
+              {(attemptsByJob[job.id] ?? []).map((att) => {
                 const attemptMessage = formatAttemptMessage(att.error, att.providerResponse);
                 return (
                   <Box key={att.id} sx={{ p: 1, borderRadius: 1, border: "1px dashed", borderColor: "divider" }}>
@@ -333,7 +292,7 @@ export default function PublishingJobList({ refreshKey, onChanged, connectionFil
                   </Box>
                 );
               })}
-              {attempts[job.id] && attempts[job.id].length === 0 && (
+              {attemptsByJob[job.id] && attemptsByJob[job.id].length === 0 && (
                 <Typography variant="caption" color="text.secondary">
                   No attempts recorded yet.
                 </Typography>
