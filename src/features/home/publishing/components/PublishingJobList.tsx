@@ -132,8 +132,10 @@ export default function PublishingJobList({ refreshKey, onChanged, connectionFil
             border: "1px solid",
             borderColor: "divider",
             borderRadius: 2,
-            p: 2,
+            p: { xs: 1.5, sm: 2 },
             width: "100%",
+            boxSizing: "border-box",
+            maxWidth: "100%",
             overflow: "hidden",
           }}
         >
@@ -141,20 +143,18 @@ export default function PublishingJobList({ refreshKey, onChanged, connectionFil
             direction="row"
             justifyContent="space-between"
             alignItems="flex-start"
-            spacing={2}
+            spacing={1.25}
             sx={{
               flexWrap: "nowrap",
-              gap: 2,
-              "@media (max-width: 768px)": {
-                gap: 1.5,
-              },
+              columnGap: 2,
+              rowGap: 0,
             }}
           >
             <Stack
               spacing={0.5}
               sx={{
                 minWidth: 0,
-                flexBasis: { xs: "66%", sm: "66%" },
+                flexBasis: "68%",
                 flexGrow: 1,
                 wordBreak: "break-word",
               }}
@@ -168,13 +168,17 @@ export default function PublishingJobList({ refreshKey, onChanged, connectionFil
                 </Typography>
               )}
               {job.mediaAssetIds?.length ? (
-                <Stack direction="row" spacing={0.5} alignItems="center" sx={{ maxWidth: 420, overflow: "hidden" }}>
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  alignItems="center"
+                  sx={{ maxWidth: { xs: "100%", sm: 480 }, flexWrap: "wrap" }}
+                >
                   <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "nowrap" }}>
                     Media:
                   </Typography>
                   {job.mediaAssetIds.slice(0, 2).map((url, idx) => {
-                    const display =
-                      url.length > 60 ? `${url.slice(0, 40)}...${url.slice(-10)}` : url;
+                    const display = url.length > 60 ? `${url.slice(0, 40)}...${url.slice(-10)}` : url;
                     return (
                       <Link
                         key={`${url}-${idx}`}
@@ -188,7 +192,10 @@ export default function PublishingJobList({ refreshKey, onChanged, connectionFil
                           textOverflow: "ellipsis",
                           overflow: "hidden",
                           whiteSpace: "nowrap",
-                          maxWidth: 320,
+                          maxWidth: { xs: 220, sm: 320 },
+                          minWidth: 0,
+                          wordBreak: "break-all",
+                          overflowWrap: "anywhere",
                         }}
                         title={url}
                       >
@@ -214,9 +221,9 @@ export default function PublishingJobList({ refreshKey, onChanged, connectionFil
               spacing={0.5}
               alignItems="flex-end"
               sx={{
-                flexBasis: { xs: "34%", sm: "34%" },
-                flexShrink: 0,
-                minWidth: 180,
+                flexBasis: "32%",
+                flexShrink: 1,
+                minWidth: 0,
                 maxWidth: 260,
               }}
             >
@@ -232,15 +239,16 @@ export default function PublishingJobList({ refreshKey, onChanged, connectionFil
                   variant="outlined"
                   disabled={retryingId === job.id}
                   onClick={() => void handleRetry(job.id)}
+                  sx={{ alignSelf: "flex-end" }}
                 >
-                  {retryingId === job.id ? "Retrying..." : "Retry"}
+                  {retryingId === job.id ? "Retry…" : "Retry"}
                 </Button>
               )}
               <Typography variant="caption" color="text.secondary">
                 Attempts: {job.attemptCount}
               </Typography>
-              <Button size="small" onClick={() => void handleToggleAttempts(job.id)}>
-                {expandedJobId === job.id ? "Hide attempts" : "Show attempts"}
+              <Button size="small" onClick={() => void handleToggleAttempts(job.id)} sx={{ alignSelf: "flex-end" }}>
+                {expandedJobId === job.id ? "Hide attempts" : "Attempts"}
               </Button>
               
               {job.status !== "SUCCEEDED" && (
@@ -250,17 +258,24 @@ export default function PublishingJobList({ refreshKey, onChanged, connectionFil
                   variant="text"
                   disabled={cancellingId === job.id}
                   onClick={() => void handleCancel(job.id)}
+                  sx={{ alignSelf: "flex-end" }}
                 >
-                  {cancellingId === job.id ? "Cancelling..." : "Cancel post"}
+                  {cancellingId === job.id ? "Cancelling…" : "Cancel"}
                 </Button>
               )}
               {job.status === "SUCCEEDED" && (
-                <Button size="small" variant="text" color="inherit" onClick={() => handleRemoveFromHistory(job.id)}>
-                  Remove from history
+                <Button
+                  size="small"
+                  variant="text"
+                  color="inherit"
+                  onClick={() => handleRemoveFromHistory(job.id)}
+                  sx={{ alignSelf: "flex-end" }}
+                >
+                  Remove
                 </Button>
               )}
             </Stack>
-      </Stack>
+          </Stack>
           {(() => {
             const friendlyFailure = truncateMessage(job.failureUserMessage ?? job.failureReason);
             return friendlyFailure ? (

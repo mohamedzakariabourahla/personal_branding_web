@@ -156,24 +156,47 @@ export default function PublishingAccountsScreen() {
       disabled: selectedPlatform.disabled,
     };
   }, [providerById, selectedPlatform]);
+  const sectionCardSx = {
+    borderRadius: 3,
+    border: `1px solid ${theme.palette.divider}`,
+    p: { xs: theme.spacing(2), md: theme.spacing(3) },
+    boxShadow: sectionShadow,
+    background:
+      theme.palette.mode === 'light'
+        ? `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${surface} 35%)`
+        : surface,
+  };
 
   return (
     <Stack spacing={{ xs: 2, md: 4 }}>
-      <Stack spacing={2}>
-        <PublishingHeader active="accounts" />
-        <Box>
-          <Typography variant="h4" fontWeight={800} mt={theme.spacing(1)}>
-            Manage publishing connectors
-          </Typography>
-          <Typography color="text.secondary" maxWidth={theme.spacing(75)}>
-            Connect Instagram (beta). Additional platforms are coming soon—add them now to stay informed.
-          </Typography>
-        </Box>
-      </Stack>
+      <Box
+        sx={{
+          borderRadius: 4,
+          background: `linear-gradient(135deg, ${alpha(
+            theme.palette.primary.main,
+            0.16
+          )}, ${alpha(theme.palette.secondary.main, 0.08)}), ${surface}`,
+          p: { xs: theme.spacing(2.5), md: theme.spacing(4) },
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+          boxShadow: sectionShadow,
+        }}
+      >
+        <Stack spacing={2}>
+          <PublishingHeader active="accounts" />
+          <Box>
+            <Typography variant="h4" fontWeight={800} mb={0.5}>
+              Manage publishing connectors
+            </Typography>
+            <Typography color="text.secondary" maxWidth={theme.spacing(75)}>
+              Connect Instagram (beta). Additional platforms are coming soon—add them now to stay informed.
+            </Typography>
+          </Box>
+        </Stack>
+      </Box>
 
       {error && <Alert severity="error">{error}</Alert>}
 
-      <Stack spacing={2}>
+      <Stack spacing={2} sx={sectionCardSx}>
         <Typography variant="h6" fontWeight={700}>
           Add or connect a platform
         </Typography>
@@ -228,15 +251,7 @@ export default function PublishingAccountsScreen() {
         )}
       </Stack>
 
-      <Box
-        sx={{
-          borderRadius: 0,
-          border: `1px solid ${theme.palette.divider}`,
-          p: theme.spacing(3),
-          boxShadow: sectionShadow,
-          backgroundColor: surface,
-        }}
-      >
+      <Box sx={sectionCardSx}>
         <Stack spacing={3}>
           <Box>
             <Typography variant="h6" fontWeight={700}>

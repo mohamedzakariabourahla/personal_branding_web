@@ -1,5 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Box, CircularProgress, Snackbar, Stack, Typography, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Chip,
+  CircularProgress,
+  Snackbar,
+  Stack,
+  Typography,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { PublishingHeader } from '@/features/home/publishing/components/PublishingHeader';
 import PublishingJobForm from '@/features/home/publishing/components/PublishingJobForm';
@@ -30,32 +42,59 @@ export default function PublishingScheduleScreen() {
   }, [connections, selectedConnectionId]);
 
   const hasConnections = connections.length > 0;
+  const sectionCardSx = {
+    borderRadius: 3,
+    border: `1px solid ${theme.palette.divider}`,
+    p: { xs: theme.spacing(2), md: theme.spacing(3) },
+    boxShadow: sectionShadow,
+    background:
+      theme.palette.mode === 'light'
+        ? `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${surface} 35%)`
+        : surface,
+  };
 
   return (
     <Stack spacing={{ xs: 2, md: 4 }}>
-      <Stack spacing={2}>
-        <PublishingHeader active="schedule" />
-        <Box>
-          <Typography variant="h4" fontWeight={800} mt={theme.spacing(1)}>
-            Schedule and monitor posts
-          </Typography>
-          <Typography color="text.secondary" maxWidth={theme.spacing(75)}>
-            Use your connected accounts to queue posts. We show server and local time to avoid timezone mistakes.
-          </Typography>
-        </Box>
-      </Stack>
+      <Box
+        sx={{
+          borderRadius: 4,
+          background: `radial-gradient(circle at 15% 20%, ${alpha(
+            theme.palette.secondary.main,
+            0.16
+          )}, transparent 35%), radial-gradient(circle at 80% 0%, ${alpha(
+            theme.palette.primary.main,
+            0.18
+          )}, transparent 40%), ${theme.palette.background.paper}`,
+          p: { xs: theme.spacing(2.5), md: theme.spacing(4) },
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+          boxShadow: sectionShadow,
+        }}
+      >
+        <Stack spacing={2}>
+          <PublishingHeader active="schedule" />
+          <Box>
+            <Typography variant="h4" fontWeight={800} mb={0.5}>
+              Schedule and monitor posts
+            </Typography>
+            <Typography color="text.secondary" maxWidth={theme.spacing(75)}>
+              Queue content against any connected account, with local and server clocks visible to avoid timezone slips.
+            </Typography>
+          </Box>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems="flex-start">
+            <Chip
+              color="primary"
+              variant="outlined"
+              label={`Local timezone: ${accountTimezone}`}
+              sx={{ fontWeight: 600 }}
+            />
+            {serverTime && <Chip label={`Server time: ${serverTime}`} variant="outlined" />}
+          </Stack>
+        </Stack>
+      </Box>
 
       {error && <Alert severity="error">{error}</Alert>}
 
-      <Box
-        sx={{
-          borderRadius: 0,
-          border: `1px solid ${theme.palette.divider}`,
-          p: theme.spacing(3),
-          boxShadow: sectionShadow,
-          backgroundColor: surface,
-        }}
-      >
+      <Box sx={sectionCardSx}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: theme.spacing(4) }}>
             <CircularProgress />
@@ -94,15 +133,7 @@ export default function PublishingScheduleScreen() {
         )}
       </Box>
 
-      <Box
-        sx={{
-          borderRadius: 0,
-          border: `1px solid ${theme.palette.divider}`,
-          p: theme.spacing(3),
-          boxShadow: sectionShadow,
-          backgroundColor: surface,
-        }}
-      >
+      <Box sx={sectionCardSx}>
         <Stack spacing={3}>
           <Box>
             <Typography variant="h6" fontWeight={700}>
